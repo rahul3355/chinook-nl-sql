@@ -1,0 +1,22 @@
+Table: Customer
+Columns:
+- CustomerId (INTEGER): Unique ID for each customer
+- FirstName (TEXT): Customer first name
+- LastName (TEXT): Customer last name
+- Company (TEXT): Customer company name if available
+- Address (TEXT): Street address
+- City (TEXT): Customer city
+- State (TEXT): Customer state or region
+- Country (TEXT): Customer country
+- PostalCode (TEXT): Postal code
+- Phone (TEXT): Customer phone number
+- Fax (TEXT): Customer fax number
+- Email (TEXT): Customer email address
+- SupportRepId (INTEGER): Employee support representative ID
+
+Table Rules:
+- Only use the Customer table
+- Country values include Brazil, Germany, Canada, Norway, Czech Republic, Austria, Belgium, and others
+- State can be NULL
+- Company can be NULL
+- Fax can be NULL

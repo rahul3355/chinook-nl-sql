@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Analytics</title>
+  <meta name="description" content="Query your Chinook customer database in plain English." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="brand">
+          <div class="brand-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <span class="brand-name">Customer Analytics</span>
+        </div>
+        <p class="sidebar-desc">Ask questions about your Chinook customer database in plain English.</p>
+      </div>
+      <div class="sidebar-bottom">
+        <button class="new-chat-btn" onclick="newSession()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          New session
+        </button>
+        <div class="history-label" style="margin-top:14px">Recent Queries</div>
+        <div id="history-list" class="history-list">
+          <div class="history-empty">No queries yet</div>
+        </div>
+      </div>
+
+      <!-- Sample questions panel pinned to sidebar bottom -->
+      <div class="sample-section">
+        <button class="sample-toggle-btn" id="sample-toggle-btn" onclick="toggleSampleQuestions()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>
+          </svg>
+          View sample questions
+          <svg class="sq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        <div class="sample-panel" id="sample-panel">
+          <div class="sample-group-label">Counts &amp; Totals</div>
+          <div class="sq" onclick="setQuestion(this)">How many customers are there?</div>
+          <div class="sq" onclick="setQuestion(this)">How many customers have a company listed?</div>
+          <div class="sq" onclick="setQuestion(this)">How many customers have a missing fax number?</div>
+          <div class="sq" onclick="setQuestion(this)">How many customers have a missing state?</div>
+          <div class="sq" onclick="setQuestion(this)">How many distinct countries are represented?</div>
+          <div class="sample-group-label">Filtering by Location</div>
+          <div class="sq" onclick="setQuestion(this)">Show all customers from Germany</div>
+          <div class="sq" onclick="setQuestion(this)">List all customers from Brazil</div>
+          <div class="sq" onclick="setQuestion(this)">Which customers are from the Czech Republic?</div>
+          <div class="sq" onclick="setQuestion(this)">Show all customers from the city of Paris</div>
+          <div class="sq" onclick="setQuestion(this)">Which customers are from Prague?</div>
+          <div class="sample-group-label">Rankings &amp; Aggregates</div>
+          <div class="sq" onclick="setQuestion(this)">Which country has the most customers?</div>
+          <div class="sq" onclick="setQuestion(this)">Which city has the most customers?</div>
+          <div class="sq" onclick="setQuestion(this)">Which support rep has the most customers?</div>
+          <div class="sq" onclick="setQuestion(this)">How many customers are there per country?</div>
+          <div class="sq" onclick="setQuestion(this)">How many customers are assigned to each support rep?</div>
+          <div class="sample-group-label">Specific Fields</div>
+          <div class="sq" onclick="setQuestion(this)">List all customer names and their emails</div>
+          <div class="sq" onclick="setQuestion(this)">Show all customers who work at a company</div>
+          <div class="sq" onclick="setQuestion(this)">List customer names and emails from Canada</div>
+          <div class="sq" onclick="setQuestion(this)">Show customers from the United States</div>
+          <div class="sq" onclick="setQuestion(this)">Which customers have a phone number but no fax?</div>
+          <div class="sample-group-label">Sorting &amp; Ranking</div>
+          <div class="sq" onclick="setQuestion(this)">Who is the first customer alphabetically by last name?</div>
+          <div class="sq" onclick="setQuestion(this)">List the top 5 countries by number of customers</div>
+          <div class="sq" onclick="setQuestion(this)">Show all customers sorted by country</div>
+          <div class="sq" onclick="setQuestion(this)">Which customer has the highest customer ID?</div>
+          <div class="sq" onclick="setQuestion(this)">List all customers whose last name starts with S</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── Main ── -->
+    <main class="main">
+      <div class="chat-area" id="chat-area">
+
+        <!-- Empty state -->
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">
+            <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              <path d="M11 8v6"/><path d="M8 11h6"/>
+            </svg>
+          </div>
+          <h2 class="empty-title">Ask questions about your customers</h2>
+          <p class="empty-subtitle">Query your Chinook customer database in plain English</p>
+          <div class="chips">
+            <button class="chip" onclick="setQuestion(this)">How many customers are there?</button>
+            <button class="chip" onclick="setQuestion(this)">Show all customers from Germany</button>
+            <button class="chip" onclick="setQuestion(this)">Which city has the most customers?</button>
+            <button class="chip" onclick="setQuestion(this)">List customer names and emails from Canada</button>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="messages" id="messages"></div>
+      </div>
+
+      <!-- Input -->
+      <div class="input-area">
+        <div class="input-card">
+          <textarea id="question-input" class="question-input" placeholder="Ask anything about your customers…" rows="1"></textarea>
+          <button id="send-btn" class="send-btn" onclick="sendMessage()">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+        <p class="input-hint">Enter to send &nbsp;·&nbsp; Shift+Enter for new line</p>
+      </div>
+    </main>
+
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
