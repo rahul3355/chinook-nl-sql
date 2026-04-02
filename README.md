@@ -24,7 +24,7 @@ The app converts your question to SQL, executes it safely, and returns a plain E
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/chinook-nl-sql.git
+git clone https://github.com/rahul3355/chinook-nl-sql.git
 cd chinook-nl-sql
 ```
 
