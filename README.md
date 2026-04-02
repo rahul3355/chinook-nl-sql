@@ -21,47 +21,50 @@ The app converts your question to SQL, executes it safely, and returns a plain E
 
 ## Setup
 
-### 1. Clone the repo
+### Step 1 — Clone and enter the folder
 
-```bash
+**Command Prompt (CMD):**
+```
 git clone https://github.com/rahul3355/chinook-nl-sql.git
 cd chinook-nl-sql
 ```
 
-### 2. Create a virtual environment
+---
 
-```bash
-python -m venv venv
+### Step 2 — Create virtual environment and install dependencies
 
-# Windows
-.\venv\Scripts\Activate.ps1
-
-# Mac/Linux
-source venv/bin/activate
+**Command Prompt (CMD):**
 ```
-
-### 3. Install dependencies
-
-```bash
+python -m venv venv
+venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 4. Configure your API key
-
-Copy `.env.example` to `.env` and add your [OpenRouter](https://openrouter.ai) API key:
-
-```bash
-cp .env.example .env
+**PowerShell:**
+```
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
 ```
 
+---
+
+### Step 3 — Add your API key
+
+Create a `.env` file in the project root with this content:
+
 ```
-OPENROUTER_API_KEY=your_key_here
+OPENROUTER_API_KEY=your_openrouter_key_here
 ```
 
-### 5. Run the app
+Get a free key at [openrouter.ai](https://openrouter.ai).
 
-```bash
-uvicorn src.api:app --reload --host 0.0.0.0 --port 8000
+---
+
+### Step 4 — Run the app
+
+```
+uvicorn src.api:app --host 0.0.0.0 --port 8000
 ```
 
 Open **http://localhost:8000** in your browser.
