@@ -42,15 +42,9 @@
     "answer": "There are 29 customers with a missing state value in the database."
   },
   {
-    "timestamp": "2026-04-03T03:12:21",
-    "question": "How many customers are there per country?",
-    "sql": "SELECT Country, COUNT(*) AS CustomerCount FROM Customer GROUP BY Country ORDER BY CustomerCount DESC",
-    "answer": "There are customers from 24 different countries. Here is the breakdown:\n\nUSA: 13 customers\nCanada: 8 customers\nFrance: 5 customers\nBrazil: 5 customers\nGermany: 4 customers\nUnited Kingdom: 3 customers\nPortugal: 2 customers\nIndia: 2 customers\nCzech Republic: 2 customers\nSweden: 1 customer\nSpain: 1 customer\nPoland: 1 customer\nNorway: 1 customer\nNetherlands: 1 customer\nItaly: 1 customer\nIreland: 1 customer\nHungary: 1 customer\nFinland: 1 customer\nDenmark: 1 customer\nChile: 1 customer\nBelgium: 1 customer\nAustria: 1 customer\nAustralia: 1 customer\nArgentina: 1 customer"
-  },
-  {
-    "timestamp": "2026-04-03T03:14:04",
-    "question": "How many customers have a missing state?",
-    "sql": "SELECT COUNT(*) FROM Customer WHERE State IS NULL",
-    "answer": "There are 29 customers with a missing state."
+    "timestamp": "2026-04-03T03:37:33",
+    "question": "How many customers have a missing fax number?",
+    "sql": "SELECT COUNT(*) FROM Customer WHERE Fax IS NULL",
+    "answer": "47 customers have a missing fax number."
   }
 ]
