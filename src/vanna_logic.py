@@ -240,7 +240,8 @@ class DirectSchemaVanna(VannaBase):
                 continue
 
             cleaned = series.astype(str).str.strip()
-            cleaned = cleaned.str.replace(",", "", regex=False).str.replace("$", "", regex=False)
+            cleaned = cleaned.str.replace(r"^\((.*)\)$", r"-\1", regex=True)
+            cleaned = cleaned.str.replace(",", "", regex=False).str.replace("$", "", regex=False).str.replace("%", "", regex=False)
             numeric_series = pd.to_numeric(cleaned, errors="coerce")
 
             if series.notna().sum() > 0 and numeric_series.notna().sum() == series.notna().sum():
@@ -248,47 +249,153 @@ class DirectSchemaVanna(VannaBase):
 
         return plot_df
 
-    def _select_chart_columns(self, df: pd.DataFrame):
-        metric_keywords = (
-            "count", "total", "sum", "revenue", "sales", "price", "amount",
-            "value", "qty", "quantity", "orders", "customers", "profit",
-            "avg", "average", "score", "rate", "pct", "percent", "growth"
-        )
-        helper_keywords = ("rank", "index", "row", "row_num", "row_number", "sort")
-        time_keywords = ("date", "time", "month", "year", "week", "day", "quarter")
+    def _looks_like_time_column(self, col_name: str) -> bool:
+        name = col_name.lower()
+        return any(keyword in name for keyword in ("date", "time", "month", "year", "week", "day", "quarter"))
 
+    def _looks_like_id_column(self, col_name: str) -> bool:
+        name = col_name.lower()
+        return name == "id" or name.endswith("_id") or name.startswith("id_")
+
+    def _metric_family(self, col_name: str) -> str:
+        name = col_name.lower()
+        if any(keyword in name for keyword in ("prev", "prior", "previous", "lag")):
+            return "helper"
+        if any(keyword in name for keyword in ("growth", "pct", "percent", "rate", "ratio")):
+            return "rate"
+        if any(keyword in name for keyword in ("revenue", "rev", "sales", "price", "amount", "value", "profit", "total", "spent")):
+            return "currency"
+        if any(keyword in name for keyword in ("count", "orders", "customers", "qty", "quantity", "volume", "score")):
+            return "count"
+        return "numeric"
+
+    def _metric_score(self, col_name: str, context: str = "") -> int:
+        family = self._metric_family(col_name)
+        score_map = {"currency": 120, "count": 100, "rate": 90, "numeric": 40, "helper": -180}
+        score = score_map.get(family, 0)
+        context = context.lower()
+        name = col_name.lower()
+
+        if any(keyword in context for keyword in ("revenue", "sales", "gmv", "ltv", "value")) and family == "currency":
+            score += 240
+        if any(keyword in context for keyword in ("count", "orders", "customers", "quantity", "volume", "how many")) and family == "count":
+            score += 240
+        if any(keyword in context for keyword in ("growth", "percent", "percentage", "rate")) and family == "rate":
+            score += 300
+        if any(keyword in context for keyword in ("average", "avg")) and "avg" in name:
+            score += 180
+
+        if self._looks_like_id_column(col_name):
+            score -= 80
+
+        return score
+
+    def _select_label_column(self, df: pd.DataFrame):
         numeric_cols = df.select_dtypes(include=["number"]).columns.tolist()
-        categorical_cols = [c for c in df.columns if c not in numeric_cols]
+        label_cols = [col for col in df.columns if col not in numeric_cols]
+        if not label_cols:
+            return None
 
-        if not numeric_cols or not categorical_cols:
-            return None, None
-
-        def metric_score(col: str) -> int:
-            name = col.lower()
+        def label_score(col_name: str) -> int:
             score = 0
-            if any(keyword in name for keyword in metric_keywords):
-                score += 100
-            if any(keyword in name for keyword in helper_keywords):
-                score -= 100
+            name = col_name.lower()
+            if self._looks_like_time_column(col_name):
+                score += 300
+            if any(keyword in name for keyword in ("name", "category", "state", "city", "country", "segment", "type", "month")):
+                score += 120
+            if self._looks_like_id_column(col_name):
+                score -= 120
             return score
 
-        preferred_numeric_cols = [col for col in numeric_cols if metric_score(col) > 0]
-        if len(preferred_numeric_cols) == 1:
-            y_col = preferred_numeric_cols[0]
-        elif len(numeric_cols) == 1:
-            y_col = numeric_cols[0]
+        return max(label_cols, key=label_score)
+
+    def _select_metric_columns(self, df: pd.DataFrame, context: str, x_col: str | None):
+        numeric_cols = df.select_dtypes(include=["number"]).columns.tolist()
+        if not numeric_cols:
+            return []
+
+        context = context.lower()
+        non_helper_cols = [col for col in numeric_cols if self._metric_family(col) != "helper"]
+        candidate_cols = non_helper_cols or numeric_cols
+        scored_cols = sorted(
+            ((self._metric_score(col, context), col) for col in candidate_cols),
+            key=lambda item: item[0],
+            reverse=True,
+        )
+        if not scored_cols:
+            return []
+
+        compare_query = any(keyword in context for keyword in ("compare", "comparison", "vs", "versus", "against"))
+        time_series = bool(x_col and self._looks_like_time_column(x_col))
+        positive_cols = [col for score, col in scored_cols if score >= 0]
+        family_groups = {}
+        for col in positive_cols:
+            family_groups.setdefault(self._metric_family(col), []).append(col)
+
+        if compare_query:
+            for family in ("currency", "count", "rate", "numeric"):
+                cols = family_groups.get(family, [])
+                if 2 <= len(cols) <= 4:
+                    return cols
+
+        if time_series:
+            for family in ("rate", "currency", "count", "numeric"):
+                cols = family_groups.get(family, [])
+                if 1 <= len(cols) <= 3:
+                    if family == "rate" and any(keyword in context for keyword in ("growth", "percent", "percentage", "rate")):
+                        return [cols[0]]
+                    if family != "rate" and len(cols) >= 2 and compare_query:
+                        return cols
+                    if family != "rate" and len(cols) >= 2 and all(self._metric_family(col) == family for col in cols):
+                        return cols[:3]
+                    if cols:
+                        return [cols[0]]
+
+        return [scored_cols[0][1]]
+
+    def _build_chart_plan(self, df: pd.DataFrame, context: str = ""):
+        plot_df = self.prepare_dataframe_for_charting(df)
+        numeric_cols = plot_df.select_dtypes(include=["number"]).columns.tolist()
+        if plot_df.empty or not numeric_cols:
+            return None
+
+        if len(plot_df) == 1:
+            single_row_metrics = [
+                col for col in numeric_cols
+                if self._metric_family(col) != "helper" and self._metric_score(col, context) >= 0
+            ]
+            metric_cols = single_row_metrics[:4] if len(single_row_metrics) > 1 else self._select_metric_columns(plot_df, context, x_col=None)
+            if not metric_cols:
+                return None
+            if len(metric_cols) == 1:
+                return {"kind": "indicator", "df": plot_df, "metric_cols": metric_cols}
+            return {"kind": "metric_bar", "df": plot_df, "metric_cols": metric_cols[:4]}
+
+        x_col = self._select_label_column(plot_df)
+        if not x_col:
+            return None
+
+        metric_cols = self._select_metric_columns(plot_df, context, x_col=x_col)
+        if not metric_cols:
+            return None
+
+        time_series = self._looks_like_time_column(x_col) or pd.api.types.is_datetime64_any_dtype(plot_df[x_col])
+        label_lengths = plot_df[x_col].astype(str).str.len()
+        horizontal = (not time_series) and (len(plot_df) > 8 or label_lengths.max() > 20 or label_lengths.mean() > 14)
+
+        if time_series:
+            if len(metric_cols) > 1:
+                kind = "multi_line"
+            elif any(keyword in context.lower() for keyword in ("trend", "over-time", "over time", "month-over-month", "mom", "growth")):
+                kind = "line"
+            else:
+                kind = "bar"
+        elif len(metric_cols) > 1:
+            kind = "grouped_bar"
         else:
-            non_helper_numeric_cols = [col for col in numeric_cols if metric_score(col) >= 0]
-            if len(non_helper_numeric_cols) != 1:
-                return None, None
-            y_col = non_helper_numeric_cols[0]
+            kind = "horizontal_bar" if horizontal else "bar"
 
-        def category_score(col: str) -> int:
-            name = col.lower()
-            return 100 if any(keyword in name for keyword in time_keywords) else 0
-
-        x_col = max(categorical_cols, key=category_score)
-        return x_col, y_col
+        return {"kind": kind, "df": plot_df, "x_col": x_col, "metric_cols": metric_cols}
 
     def plotly_system_message(self, **kwargs) -> str:
         return (
@@ -328,53 +435,176 @@ class DirectSchemaVanna(VannaBase):
         return code
 
     def get_deterministic_figure(self, df: pd.DataFrame, title: str | None = None):
-        """Rule-based plotter for single-metric result sets to avoid LLM hallucinations."""
+        """Rule-based plotter for common analytical result shapes without LLM fallback."""
         import plotly.graph_objects as go
-        plot_df = self.prepare_dataframe_for_charting(df)
-        if len(plot_df.columns) < 2:
+        chart_plan = self._build_chart_plan(df, context=title or "")
+        if not chart_plan:
             return None
 
-        x_col, y_col = self._select_chart_columns(plot_df)
-        if not x_col or not y_col:
-            return None
+        plot_df = chart_plan["df"]
+        kind = chart_plan["kind"]
+        metric_cols = chart_plan["metric_cols"]
 
-        y_values = pd.to_numeric(plot_df[y_col], errors="coerce")
-        if y_values.isna().any():
-            return None
+        colors = ["#ef4444", "#f97316", "#3b82f6", "#22c55e"]
+        fig = go.Figure()
 
-        x_values = plot_df[x_col].tolist()
-        fig = go.Figure(
-            data=[
-                go.Bar(
-                    x=x_values,
-                    y=y_values.tolist(),
-                    marker_color="#ef4444",
-                    name=y_col,
+        if kind == "indicator":
+            metric_col = metric_cols[0]
+            value = pd.to_numeric(plot_df.iloc[0][metric_col], errors="coerce")
+            if pd.isna(value):
+                return None
+
+            family = self._metric_family(metric_col)
+            number_config = {"valueformat": ",.0f"} if family == "count" else {"valueformat": ",.2f"}
+            if family == "currency":
+                number_config["prefix"] = "$"
+            elif family == "rate":
+                number_config["suffix"] = "%"
+
+            fig.add_trace(
+                go.Indicator(
+                    mode="number",
+                    value=float(value),
+                    number=number_config,
+                    title={"text": title or metric_col},
                 )
-            ]
-        )
+            )
+            fig.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                autosize=True,
+                height=220,
+                margin=dict(l=20, r=20, t=50, b=20),
+                font=dict(family="Arial, sans-serif", size=14),
+            )
+            return fig
+
+        x_col = chart_plan["x_col"]
+        x_values = plot_df[x_col].tolist()
+        yaxis_family = self._metric_family(metric_cols[0])
+
+        for index, metric_col in enumerate(metric_cols):
+            y_values = pd.to_numeric(plot_df[metric_col], errors="coerce")
+            if y_values.isna().any():
+                return None
+
+            color = colors[index % len(colors)]
+            if kind in ("line", "multi_line"):
+                fig.add_trace(
+                    go.Scatter(
+                        x=x_values,
+                        y=y_values.tolist(),
+                        mode="lines+markers",
+                        line=dict(color=color, width=3),
+                        marker=dict(color=color, size=7),
+                        name=metric_col,
+                    )
+                )
+            elif kind == "horizontal_bar":
+                fig.add_trace(
+                    go.Bar(
+                        x=y_values.tolist(),
+                        y=x_values,
+                        orientation="h",
+                        marker_color=color,
+                        name=metric_col,
+                    )
+                )
+            else:
+                fig.add_trace(
+                    go.Bar(
+                        x=x_values,
+                        y=y_values.tolist(),
+                        marker_color=color,
+                        name=metric_col,
+                    )
+                )
+
+        show_legend = len(metric_cols) > 1
+        height = 540
+        if kind == "horizontal_bar":
+            height = min(900, max(420, 90 + len(plot_df) * 28))
+        elif kind == "metric_bar":
+            x_values = [col.replace("_", " ").title() for col in metric_cols]
+            y_values = [float(pd.to_numeric(plot_df.iloc[0][col], errors="coerce")) for col in metric_cols]
+            fig = go.Figure(
+                data=[
+                    go.Bar(
+                        x=x_values,
+                        y=y_values,
+                        marker_color=colors[:len(metric_cols)],
+                        showlegend=False,
+                    )
+                ]
+            )
+            yaxis_family = self._metric_family(metric_cols[0])
+            show_legend = False
+            height = 420
 
         fig.update_layout(
             title=title,
-            paper_bgcolor='white',
-            plot_bgcolor='white',
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
             autosize=True,
-            height=540,
-            margin=dict(l=80, r=30, t=60, b=90),
+            height=height,
+            margin=dict(l=100 if kind == "horizontal_bar" else 80, r=30, t=60, b=90),
             font=dict(family="Arial, sans-serif", size=12),
-            showlegend=False,
-            xaxis_title=x_col,
-            yaxis_title=y_col,
+            showlegend=show_legend,
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
             bargap=0.2,
         )
-        fig.update_xaxes(tickangle=45)
-        fig.update_yaxes(rangemode='tozero')
-        
-        if 'price' in y_col.lower() or 'revenue' in y_col.lower() or 'value' in y_col.lower():
-            fig.update_layout(yaxis_tickformat='$,.2f')
+        if kind == "grouped_bar":
+            fig.update_layout(barmode="group")
+
+        if kind == "horizontal_bar":
+            fig.update_xaxes(showgrid=True, gridcolor="rgba(15,23,42,0.08)")
+            fig.update_yaxes(automargin=True)
         else:
-            fig.update_layout(yaxis_tickformat=',d')
-            
+            fig.update_xaxes(tickangle=45, automargin=True)
+            fig.update_yaxes(showgrid=True, gridcolor="rgba(15,23,42,0.08)")
+
+        if kind not in ("line", "multi_line", "horizontal_bar"):
+            fig.update_traces(marker_line_width=0)
+
+        all_values = []
+        for metric_col in metric_cols:
+            numeric_values = pd.to_numeric(plot_df[metric_col], errors="coerce").dropna().tolist()
+            all_values.extend(numeric_values)
+
+        if all_values and min(all_values) >= 0:
+            if kind == "horizontal_bar":
+                fig.update_xaxes(rangemode="tozero")
+            else:
+                fig.update_yaxes(rangemode="tozero")
+        else:
+            if kind == "horizontal_bar":
+                fig.update_xaxes(zeroline=True, zerolinecolor="rgba(15,23,42,0.25)")
+            else:
+                fig.update_yaxes(zeroline=True, zerolinecolor="rgba(15,23,42,0.25)")
+
+        if yaxis_family == "currency":
+            if kind == "horizontal_bar":
+                fig.update_xaxes(tickprefix="$", tickformat=",.2f")
+            else:
+                fig.update_yaxes(tickprefix="$", tickformat=",.2f")
+        elif yaxis_family == "rate":
+            if kind == "horizontal_bar":
+                fig.update_xaxes(ticksuffix="%", tickformat=",.2f")
+            else:
+                fig.update_yaxes(ticksuffix="%", tickformat=",.2f")
+        else:
+            if kind == "horizontal_bar":
+                fig.update_xaxes(tickformat=",.0f")
+            else:
+                fig.update_yaxes(tickformat=",.0f")
+
+        if kind == "horizontal_bar":
+            fig.update_layout(xaxis_title=metric_cols[0], yaxis_title=x_col)
+        elif kind == "metric_bar":
+            fig.update_layout(xaxis_title="Metric", yaxis_title="Value")
+        else:
+            fig.update_layout(xaxis_title=x_col, yaxis_title=metric_cols[0] if len(metric_cols) == 1 else "Value")
+
         return fig
 
     def get_plotly_figure(self, plotly_code: str, df: pd.DataFrame, **kwargs):

@@ -11,6 +11,8 @@ from src.db import run_query
 from src.answer_generator import generate_answer
 from src.history_manager import save_history, load_history, delete_entry
 from src.vanna_logic import vn_engine
+from src.suggestion_generator import generate_suggestions
+from src.insight_generator import generate_insights
 
 app = FastAPI(title="Olist E-commerce NL-SQL API", version="1.0.0")
 
@@ -32,6 +34,8 @@ class ChatResponse(BaseModel):
     sql: str
     row_count: int
     timestamp: str
+    suggestions: list[str] = []
+    insights: list[str] = []
 
 
 class ChartRequest(BaseModel):
@@ -75,9 +79,18 @@ async def chat(request: ChatRequest):
         )
 
     answer = generate_answer(question, sql, rows)
+    suggestions = generate_suggestions(question, sql, rows)
+    insights = generate_insights(question, sql, rows)
     save_history(question, sql, answer)
 
-    return ChatResponse(answer=answer, sql=sql, row_count=len(rows), timestamp=ts)
+    return ChatResponse(
+        answer=answer, 
+        sql=sql, 
+        row_count=len(rows), 
+        timestamp=ts,
+        suggestions=suggestions,
+        insights=insights
+    )
 
 
 @app.post("/generate_chart", response_model=ChartResponse)
@@ -92,16 +105,18 @@ async def generate_chart(request: ChartRequest):
             raise HTTPException(status_code=400, detail="No data available for charting")
         df = vn_engine.prepare_dataframe_for_charting(df)
 
-        # Try the rule-based plotter first for single-metric result sets.
+        # Use the deterministic plotter for supported analytical result shapes.
         fig = vn_engine.get_deterministic_figure(df, title=request.question.strip())
 
         if fig is None:
             raise HTTPException(
                 status_code=400,
-                detail="Chart generation requires one label/time column and one numeric metric column."
+                detail="Chart generation could not match this result to a supported chart shape."
             )
 
         return ChartResponse(chart_json=fig.to_json())
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Chart Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

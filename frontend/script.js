@@ -231,7 +231,7 @@ function stopLoadingAnim() {
 }
 
 // ─── Assistant Answer ─────────────────────────────────────
-function resolveLoadingBubble(question, answer, sql, rowCount, timestamp) {
+function resolveLoadingBubble(question, answer, sql, rowCount, timestamp, suggestions = [], insights = []) {
   stopLoadingAnim();
   const msg = document.getElementById('loading-msg');
   if (!msg) return;
@@ -278,6 +278,34 @@ function resolveLoadingBubble(question, answer, sql, rowCount, timestamp) {
           </svg>
           Generate Chart
         </button>
+      </div>` : ''}
+
+      ${insights && insights.length > 0 ? `
+      <div class="insights-container">
+        <div class="insights-header">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+          </svg>
+          <span>Insights</span>
+        </div>
+        <div class="insights-list">
+          ${insights.map(ins => `
+            <div class="insight-item">
+              <span class="insight-point"></span>
+              <span>${escapeHtml(ins)}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>` : ''}
+      
+      ${suggestions && suggestions.length > 0 ? `
+      <div class="suggestion-chips-container">
+        <div class="suggestion-label">Suggested next steps</div>
+        ${suggestions.map(s => `
+          <button class="suggestion-chip" onclick="setQuestion(null, '${escapeHtml(s).replace(/'/g, "\\'")}'); sendMessage();">
+            ${escapeHtml(s)}
+          </button>
+        `).join('')}
       </div>` : ''}
     </div>`;
 
@@ -414,7 +442,7 @@ async function sendMessage() {
       throw new Error(e.detail || `Server error ${res.status}`);
     }
     const data = await res.json();
-    resolveLoadingBubble(question, data.answer, data.sql, data.row_count, data.timestamp);
+    resolveLoadingBubble(question, data.answer, data.sql, data.row_count, data.timestamp, data.suggestions, data.insights);
     fetchHistory();
   } catch (err) {
     resolveError(err.message || 'Something went wrong. Please try again.');
