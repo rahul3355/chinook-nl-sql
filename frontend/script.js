@@ -16,16 +16,62 @@ const historyList  = document.getElementById('history-list');
 // ─── State ────────────────────────────────────────────────
 let isLoading       = false;
 let wordInterval    = null;
-let dotInterval     = null;
 let wordIdx         = 0;
-let dotCount        = 3;
-let historyItems    = [];   // full history array for replay
+let historyItems    = [];
 
 // ─── Helpers ──────────────────────────────────────────────
 function escapeHtml(s) {
   return String(s)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function suggestionMarkup(suggestions = []) {
+  if (!suggestions || suggestions.length === 0) return '';
+
+  return `
+    <div class="suggestion-chips-container">
+      <div class="suggestion-label">Suggested next steps</div>
+      ${suggestions.map(item => `
+        <button class="suggestion-chip" data-question="${escapeHtml(item.question || '')}">
+          <span>${escapeHtml(item.question || '')}</span>
+          ${item.rationale ? `<span class="suggestion-rationale">${escapeHtml(item.rationale)}</span>` : ''}
+        </button>
+      `).join('')}
+    </div>`;
+}
+
+function attachMessageInteractions(root) {
+  if (!root) return;
+
+  const chartBtn = root.querySelector('.chart-trigger-btn');
+  if (chartBtn && !chartBtn.dataset.bound) {
+    chartBtn.dataset.bound = '1';
+    chartBtn.addEventListener('click', () => {
+      const q = chartBtn.getAttribute('data-question');
+      const s = chartBtn.getAttribute('data-sql');
+      generateChart(q, s, chartBtn);
+    });
+  }
+
+  root.querySelectorAll('.suggestion-chip').forEach(btn => {
+    if (btn.dataset.bound) return;
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', () => {
+      const question = btn.getAttribute('data-question') || btn.textContent.trim();
+      setQuestion(null, question);
+      sendMessage();
+    });
+  });
+}
+
+function setArtifactsState(messageEl, suggestions = []) {
+  if (!messageEl) return;
+  const container = messageEl.querySelector('.message-artifacts');
+  if (!container) return;
+  container.innerHTML = suggestionMarkup(suggestions);
+  attachMessageInteractions(container);
+  scrollToBottom();
 }
 
 function formatTs(ts) {
@@ -49,7 +95,7 @@ async function fetchHistory() {
     const total    = allItems.length;
     historyItems   = allItems.slice().reverse().slice(0, 25).map((item, di) => ({
       ...item,
-      _origIdx: total - 1 - di   // index in the original JSON array
+      _origIdx: total - 1 - di
     }));
     renderHistory(historyItems);
   } catch { /* silent */ }
@@ -85,17 +131,16 @@ async function deleteHistoryEntry(i, event) {
   fetchHistory();
 }
 
-// Load a past entry into the chat area
 function loadHistoryEntry(idx) {
   const item = historyItems[idx];
   if (!item || isLoading) return;
-  newSession();                                         // clear current chat
+  newSession();
   hideEmptyState();
   appendUserMessage(item.question);
-  appendHistoryAnswer(item.question, item.answer, item.sql, item.row_count, item.timestamp);
+  appendHistoryAnswer(item.question, item.answer, item.sql, item.row_count, item.timestamp, item.suggestions || []);
 }
 
-function appendHistoryAnswer(question, answer, sql, rowCount, timestamp) {
+function appendHistoryAnswer(question, answer, sql, rowCount, timestamp, suggestions = []) {
   const div = document.createElement('div');
   div.className = 'message assistant-message';
   const uid = 'dp' + Date.now();
@@ -130,26 +175,17 @@ function appendHistoryAnswer(question, answer, sql, rowCount, timestamp) {
       </div>
       ${(rowCount > 1 || !rowCount) ? `
       <div class="suggested-actions">
-        <button class="action-btn" onclick="generateChart('${escapeHtml(question)}', '${escapeHtml(sql.replace(/'/g, "\\'"))}', this)">
+        <button class="action-btn chart-trigger-btn" data-question="${escapeHtml(question)}" data-sql="${escapeHtml(sql)}">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
           </svg>
           Generate Chart
         </button>
       </div>` : ''}
+      <div class="message-artifacts">${suggestionMarkup(suggestions)}</div>
     </div>`;
   messagesEl.appendChild(div);
-  
-  // Attach chart listener if button exists
-  const btn = div.querySelector('.chart-trigger-btn');
-  if (btn) {
-    btn.addEventListener('click', () => {
-      const q = btn.getAttribute('data-question');
-      const s = btn.getAttribute('data-sql');
-      generateChart(q, s, btn);
-    });
-  }
-  
+  attachMessageInteractions(div);
   scrollToBottom();
 }
 
@@ -226,16 +262,16 @@ function startLoadingAnim() {
 
 function stopLoadingAnim() {
   clearInterval(wordInterval);
-  clearInterval(dotInterval);
-  wordInterval = dotInterval = null;
+  wordInterval = null;
 }
 
 // ─── Assistant Answer ─────────────────────────────────────
-function resolveLoadingBubble(question, answer, sql, rowCount, timestamp, suggestions = [], insights = []) {
+function resolveLoadingBubble(question, answer, sql, rowCount, timestamp, suggestions = [], historyId = null) {
   stopLoadingAnim();
   const msg = document.getElementById('loading-msg');
   if (!msg) return;
   msg.id = '';
+  if (historyId) msg.dataset.historyId = historyId;
 
   const uid = 'dp' + Date.now();
   msg.innerHTML = `
@@ -279,47 +315,12 @@ function resolveLoadingBubble(question, answer, sql, rowCount, timestamp, sugges
           Generate Chart
         </button>
       </div>` : ''}
-
-      ${insights && insights.length > 0 ? `
-      <div class="insights-container">
-        <div class="insights-header">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
-          </svg>
-          <span>Insights</span>
-        </div>
-        <div class="insights-list">
-          ${insights.map(ins => `
-            <div class="insight-item">
-              <span class="insight-point"></span>
-              <span>${escapeHtml(ins)}</span>
-            </div>
-          `).join('')}
-        </div>
-      </div>` : ''}
-      
-      ${suggestions && suggestions.length > 0 ? `
-      <div class="suggestion-chips-container">
-        <div class="suggestion-label">Suggested next steps</div>
-        ${suggestions.map(s => `
-          <button class="suggestion-chip" onclick="setQuestion(null, '${escapeHtml(s).replace(/'/g, "\\'")}'); sendMessage();">
-            ${escapeHtml(s)}
-          </button>
-        `).join('')}
-      </div>` : ''}
+      <div class="message-artifacts">${suggestionMarkup(suggestions)}</div>
     </div>`;
 
-  // Attach chart listener
-  const btn = msg.querySelector('.chart-trigger-btn');
-  if (btn) {
-    btn.addEventListener('click', () => {
-      const q = btn.getAttribute('data-question');
-      const s = btn.getAttribute('data-sql');
-      generateChart(q, s, btn);
-    });
-  }
-
+  attachMessageInteractions(msg);
   scrollToBottom();
+  return msg;
 }
 
 async function generateChart(question, sql, btn) {
@@ -349,13 +350,11 @@ async function generateChart(question, sql, btn) {
     const data = await res.json();
     const figure = JSON.parse(data.chart_json);
     
-    // Create chart container
     const chartDiv = document.createElement('div');
     chartDiv.className = 'chart-container';
     const chartId = 'chart-' + Date.now();
     chartDiv.id = chartId;
     
-    // Append to the same assistant message body and expand bubble
     const body = btn.parentElement.parentElement;
     const message = body.closest('.message');
     body.classList.add('has-chart');
@@ -364,16 +363,12 @@ async function generateChart(question, sql, btn) {
     }
     body.appendChild(chartDiv);
     
-    // Render Plotly
     Plotly.newPlot(chartId, figure.data, figure.layout, {
       responsive: true,
       displayModeBar: false
     });
     
-    // Hide the button after use and scroll
     btn.parentElement.style.display = 'none';
-    
-    // Smooth scroll again after Plotly layout is fully settled
     setTimeout(scrollToBottom, 300);
   } catch (err) {
     console.error("Chart Error:", err);
@@ -442,7 +437,8 @@ async function sendMessage() {
       throw new Error(e.detail || `Server error ${res.status}`);
     }
     const data = await res.json();
-    resolveLoadingBubble(question, data.answer, data.sql, data.row_count, data.timestamp, data.suggestions, data.insights);
+    const visibleSuggestions = data.suggestions || [];
+    resolveLoadingBubble(question, data.answer, data.sql, data.row_count, data.timestamp, visibleSuggestions, data.history_id);
     fetchHistory();
   } catch (err) {
     resolveError(err.message || 'Something went wrong. Please try again.');
@@ -469,7 +465,6 @@ questionInput.addEventListener('input', () => {
 // ─── Init ─────────────────────────────────────────────────
 fetchHistory();
 
-// Handle responsive resizing for Plotly charts
 window.addEventListener('resize', () => {
     if (typeof Plotly === 'undefined') return;
     const charts = document.querySelectorAll('.chart-container');

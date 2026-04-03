@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Olist E-commerce Analytics</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2'><path d='M12 2L2 7l10 5 10-5-10-5z'/><path d='M2 17l10 5 10-5'/><path d='M2 12l10 5 10-5'/></svg>" />
   <meta name="description" content="Query your Olist e-commerce database in plain English." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -25,7 +26,7 @@
           </div>
           <span class="brand-name">E-commerce Analytics</span>
         </div>
-        <p class="sidebar-desc">Ask questions about your Olist e-commerce database in plain English.</p>
+        <p class="sidebar-desc">Ask questions about your <a href="https://www.kaggle.com/datasets/terencicp/e-commerce-dataset-by-olist-as-an-sqlite-database" target="_blank" rel="noopener" style="text-decoration:underline;color:inherit">Olist e-commerce database</a> in plain English.</p>
       </div>
       <div class="sidebar-bottom">
         <button class="new-chat-btn" onclick="newSession()">
@@ -53,35 +54,35 @@
         </button>
         <div class="sample-panel" id="sample-panel">
           <div class="sample-group-label">Orders &amp; Revenue</div>
-          <div class="sq" onclick="setQuestion(this)">How many orders are there?</div>
-          <div class="sq" onclick="setQuestion(this)">What is the total revenue?</div>
-          <div class="sq" onclick="setQuestion(this)">What is the average order value?</div>
-          <div class="sq" onclick="setQuestion(this)">How many orders were delivered?</div>
-          <div class="sq" onclick="setQuestion(this)">What is the total freight value?</div>
+          <div class="sq" onclick="setQuestion(this)">What is the total revenue by order status?</div>
+          <div class="sq" onclick="setQuestion(this)">How much does each state contribute to total revenue?</div>
+          <div class="sq" onclick="setQuestion(this)">What is the average order value including freight?</div>
+          <div class="sq" onclick="setQuestion(this)">Which month had the highest delivered revenue?</div>
+          <div class="sq" onclick="setQuestion(this)">What percentage of orders were cancelled vs delivered?</div>
           <div class="sample-group-label">Geography &amp; Categories</div>
-          <div class="sq" onclick="setQuestion(this)">Which state has the most customers?</div>
-          <div class="sq" onclick="setQuestion(this)">Total revenue by customer state</div>
-          <div class="sq" onclick="setQuestion(this)">Top 5 categories by sales revenue in English</div>
-          <div class="sq" onclick="setQuestion(this)">How many customers are from São Paulo?</div>
-          <div class="sq" onclick="setQuestion(this)">Which city has the highest revenue?</div>
-          <div class="sample-group-label">Payments &amp; Reviews</div>
-          <div class="sq" onclick="setQuestion(this)">Which payment method is most popular?</div>
-          <div class="sq" onclick="setQuestion(this)">What is the average review score?</div>
-          <div class="sq" onclick="setQuestion(this)">How many orders have a 5-star review?</div>
-          <div class="sq" onclick="setQuestion(this)">List orders with a review score of 1</div>
-          <div class="sq" onclick="setQuestion(this)">Total payments by payment type</div>
-          <div class="sample-group-label">Products &amp; Items</div>
-          <div class="sq" onclick="setQuestion(this)">How many distinct products were sold?</div>
-          <div class="sq" onclick="setQuestion(this)">Average price per product category</div>
-          <div class="sq" onclick="setQuestion(this)">Which product was sold the most?</div>
-          <div class="sq" onclick="setQuestion(this)">List items for order id ...</div>
-          <div class="sq" onclick="setQuestion(this)">How many sellers are from Paraná?</div>
-          <div class="sample-group-label">Time &amp; Performance</div>
-          <div class="sq" onclick="setQuestion(this)">What is the average delivery time in days?</div>
-          <div class="sq" onclick="setQuestion(this)">How many orders were placed in each month?</div>
-          <div class="sq" onclick="setQuestion(this)">Which day of the week has most orders?</div>
-          <div class="sq" onclick="setQuestion(this)">Percentage of orders delivered on time</div>
-          <div class="sq" onclick="setQuestion(this)">List orders estimated for delivery yesterday</div>
+          <div class="sq" onclick="setQuestion(this)">Which product categories generate the most revenue in São Paulo?</div>
+          <div class="sq" onclick="setQuestion(this)">How does average freight value vary by customer state?</div>
+          <div class="sq" onclick="setQuestion(this)">Which states have the highest average review scores?</div>
+          <div class="sq" onclick="setQuestion(this)">Top 5 product categories by number of sellers</div>
+          <div class="sq" onclick="setQuestion(this)">Which cities have the most repeat customers?</div>
+          <div class="sample-group-label">Payments &amp; Customer Behavior</div>
+          <div class="sq" onclick="setQuestion(this)">What is the average payment value by payment type for delivered orders?</div>
+          <div class="sq" onclick="setQuestion(this)">How many installments do customers use for high-value orders?</div>
+          <div class="sq" onclick="setQuestion(this)">Which payment method has the highest average order value?</div>
+          <div class="sq" onclick="setQuestion(this)">What is the relationship between review score and order value?</div>
+          <div class="sq" onclick="setQuestion(this)">How many customers use multiple payment methods per order?</div>
+          <div class="sample-group-label">Seller &amp; Product Performance</div>
+          <div class="sq" onclick="setQuestion(this)">Which sellers have the highest total revenue?</div>
+          <div class="sq" onclick="setQuestion(this)">What is the average delivery time by seller state?</div>
+          <div class="sq" onclick="setQuestion(this)">Which product categories have the highest freight-to-price ratio?</div>
+          <div class="sq" onclick="setQuestion(this)">How many products does each seller offer and what is their average price?</div>
+          <div class="sq" onclick="setQuestion(this)">Which sellers serve the most customer states?</div>
+          <div class="sample-group-label">Time &amp; Delivery Performance</div>
+          <div class="sq" onclick="setQuestion(this)">How has monthly revenue trended over time for delivered orders?</div>
+          <div class="sq" onclick="setQuestion(this)">What is the average delivery delay by month?</div>
+          <div class="sq" onclick="setQuestion(this)">Which day of the week has the most order purchases?</div>
+          <div class="sq" onclick="setQuestion(this)">How does delivery time affect review scores?</div>
+          <div class="sq" onclick="setQuestion(this)">What is the month-over-month growth in delivered orders?</div>
         </div>
       </div>
     </aside>
@@ -101,10 +102,10 @@
           <h2 class="empty-title">Ask questions about e-commerce</h2>
           <p class="empty-subtitle">Query your Olist database in plain English</p>
           <div class="chips">
-            <button class="chip" onclick="setQuestion(this)">What is the total revenue?</button>
-            <button class="chip" onclick="setQuestion(this)">Top 5 categories by revenue</button>
-            <button class="chip" onclick="setQuestion(this)">Which state has most orders?</button>
-            <button class="chip" onclick="setQuestion(this)">Average delivery time in days</button>
+            <button class="chip" onclick="setQuestion(this)">Revenue by customer state</button>
+            <button class="chip" onclick="setQuestion(this)">Top product categories by sales</button>
+            <button class="chip" onclick="setQuestion(this)">Monthly revenue trend for delivered orders</button>
+            <button class="chip" onclick="setQuestion(this)">Average review score by payment type</button>
           </div>
         </div>
 

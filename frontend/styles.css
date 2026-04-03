@@ -409,6 +409,9 @@ body {
   text-align: left;
   line-height: 1.4;
   box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .suggestion-chip:hover {
@@ -419,56 +422,22 @@ body {
   box-shadow: 0 4px 12px rgba(99,102,241,0.08);
 }
 
-/* ─── Proactive Insights ─── */
-.insights-container {
-  margin-top: 20px;
-  padding: 18px 20px;
-  background: #f8faff;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 16px;
-  animation: fadeInUp 0.4s ease 0.15s backwards;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+.suggestion-rationale {
+  font-size: 11px;
+  color: #9ca3af;
+  line-height: 1.35;
 }
 
-.insights-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 15px;
-  color: #1e293b;
-}
-
-.insights-header svg {
-  color: #6366f1;
-}
-
-.insights-header span {
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.insights-list {
+.message-artifacts {
   display: flex;
   flex-direction: column;
-  gap: 14px;
 }
 
-.insight-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  font-size: 14.5px;
-  color: #334155;
-  line-height: 1.55;
-}
-
-.insight-point {
-  width: 6px;
-  height: 6px;
-  background: #a5b4fc;
-  border-radius: 50%;
-  margin-top: 8px;
-  flex-shrink: 0;
+.artifact-loading {
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #94a3b8;
+  font-size: 12.5px;
 }

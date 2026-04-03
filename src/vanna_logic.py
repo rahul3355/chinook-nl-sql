@@ -4,11 +4,12 @@ from vanna.base import VannaBase
 from src.llm import call_llm
 from src.config import DB_PATH
 
+
 class DirectSchemaVanna(VannaBase):
     def __init__(self, config=None):
         super().__init__(config=config)
         self.db_path = DB_PATH
-        
+
         # Olist DDL (all 11 tables)
         self.ddl = """
         CREATE TABLE customers (
@@ -116,7 +117,7 @@ class DirectSchemaVanna(VannaBase):
             declared_monthly_revenue REAL
         );
         """
-        
+
         self.documentation = [
             "Revenue is the sum of the 'price' column in the 'order_items' table.",
             "Total freight is the sum of the 'freight_value' column in 'order_items'.",
@@ -128,50 +129,111 @@ class DirectSchemaVanna(VannaBase):
             "Lead data is in 'leads_qualified' and 'leads_closed', linked via 'mql_id'.",
             "IMPORTANT: 'customer_id' is unique per order. To track a single human across multiple orders (Retention/LTV), you MUST use 'customer_unique_id' from the 'customers' table.",
             "To calculate Month-over-Month (MoM) growth, use a Common Table Expression (CTE) and the 'LAG' window function on aggregated revenue.",
-            "IMPORTANT: Olist products do NOT have human-readable names (e.g. 'iPhone'). They are identified by 'product_id'. When a user asks for 'products', ALWAYS return the 'product_category_name_english' from the translation table so they can understand what the products are."
+            "IMPORTANT: Olist products do NOT have human-readable names (e.g. 'iPhone'). They are identified by 'product_id'. When a user asks for 'products', ALWAYS return the 'product_category_name_english' from the translation table so they can understand what the products are.",
         ]
-        
+
         # Gold Standard Q&A for high accuracy
         self.train_data = [
-            {"question": "How many orders are there?", "sql": "SELECT COUNT(*) FROM orders"},
-            {"question": "What is the total revenue?", "sql": "SELECT SUM(price) FROM order_items"},
-            {"question": "What is the average order value?", "sql": "SELECT SUM(price) / COUNT(DISTINCT order_id) FROM order_items"},
             {
-                "question": "Top 5 categories by sales revenue in English",
-                "sql": "SELECT t.product_category_name_english, SUM(oi.price) as revenue FROM order_items oi JOIN products p ON oi.product_id = p.product_id JOIN product_category_name_translation t ON p.product_category_name = t.product_category_name GROUP BY t.product_category_name_english ORDER BY revenue DESC LIMIT 5"
+                "question": "What is the total revenue by order status?",
+                "sql": "SELECT o.order_status, SUM(oi.price) as revenue, COUNT(DISTINCT o.order_id) as order_count FROM orders o JOIN order_items oi ON o.order_id = oi.order_id GROUP BY o.order_status ORDER BY revenue DESC",
             },
             {
-                "question": "Top 5 products by revenue",
-                "sql": "SELECT t.product_category_name_english as product, SUM(oi.price) as revenue FROM order_items oi JOIN products p ON oi.product_id = p.product_id JOIN product_category_name_translation t ON p.product_category_name = t.product_category_name GROUP BY 1 ORDER BY revenue DESC LIMIT 5"
+                "question": "How much does each state contribute to total revenue?",
+                "sql": "SELECT c.customer_state, SUM(oi.price) as revenue, COUNT(DISTINCT o.order_id) as order_count, ROUND(AVG(oi.price), 2) as avg_order_value FROM orders o JOIN order_items oi ON o.order_id = oi.order_id JOIN customers c ON o.customer_id = c.customer_id GROUP BY c.customer_state ORDER BY revenue DESC",
             },
             {
-                "question": "Which state has the most customers?",
-                "sql": "SELECT customer_state, COUNT(*) as customer_count FROM customers GROUP BY customer_state ORDER BY customer_count DESC LIMIT 1"
+                "question": "What is the average order value including freight?",
+                "sql": "SELECT o.order_id, SUM(oi.price + oi.freight_value) as total_value FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE o.order_status = 'delivered' GROUP BY o.order_id ORDER BY total_value DESC LIMIT 10",
             },
             {
-                "question": "Total revenue by customer state",
-                "sql": "SELECT c.customer_state, SUM(oi.price) as revenue FROM order_items oi JOIN orders o ON oi.order_id = o.order_id JOIN customers c ON o.customer_id = c.customer_id GROUP BY c.customer_state ORDER BY revenue DESC"
+                "question": "Which month had the highest delivered revenue?",
+                "sql": "SELECT strftime('%Y-%m', o.order_purchase_timestamp) as month, SUM(oi.price) as revenue, COUNT(DISTINCT o.order_id) as order_count FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE o.order_status = 'delivered' GROUP BY 1 ORDER BY revenue DESC LIMIT 12",
             },
             {
-                "question": "Which payment method is most popular?",
-                "sql": "SELECT payment_type, COUNT(*) as count FROM order_payments GROUP BY payment_type ORDER BY count DESC"
+                "question": "What percentage of orders were cancelled vs delivered?",
+                "sql": "SELECT o.order_status, COUNT(DISTINCT o.order_id) as order_count, ROUND(COUNT(DISTINCT o.order_id) * 100.0 / (SELECT COUNT(DISTINCT order_id) FROM orders), 1) as pct FROM orders o GROUP BY o.order_status ORDER BY order_count DESC",
             },
             {
-                "question": "What is the average delivery time in days?",
-                "sql": "SELECT AVG(julianday(order_delivered_customer_date) - julianday(order_purchase_timestamp)) FROM orders WHERE order_status = 'delivered' AND order_delivered_customer_date IS NOT NULL"
+                "question": "Which product categories generate the most revenue in São Paulo?",
+                "sql": "SELECT t.product_category_name_english, SUM(oi.price) as revenue, COUNT(DISTINCT oi.order_id) as order_count FROM order_items oi JOIN orders o ON oi.order_id = o.order_id JOIN customers c ON o.customer_id = c.customer_id JOIN products p ON oi.product_id = p.product_id JOIN product_category_name_translation t ON p.product_category_name = t.product_category_name WHERE c.customer_state = 'SP' GROUP BY t.product_category_name_english ORDER BY revenue DESC LIMIT 10",
             },
             {
-                "question": "What was our Month-over-Month (MoM) revenue growth in 2018?",
-                "sql": "WITH monthly_rev AS (SELECT strftime('%Y-%m', o.order_purchase_timestamp) as month, SUM(oi.price) as rev FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE o.order_status = 'delivered' AND month LIKE '2018%' GROUP BY 1) SELECT month, rev, LAG(rev) OVER (ORDER BY month) as prev, ROUND(((rev - LAG(rev) OVER (ORDER BY month)) / LAG(rev) OVER (ORDER BY month)) * 100, 2) as growth_pct FROM monthly_rev"
+                "question": "How does average freight value vary by customer state?",
+                "sql": "SELECT c.customer_state, ROUND(AVG(oi.freight_value), 2) as avg_freight, ROUND(SUM(oi.freight_value), 2) as total_freight, COUNT(DISTINCT oi.order_id) as order_count FROM orders o JOIN order_items oi ON o.order_id = oi.order_id JOIN customers c ON o.customer_id = c.customer_id GROUP BY c.customer_state ORDER BY avg_freight DESC",
             },
             {
-                "question": "How many repeat customers do we have?",
-                "sql": "SELECT COUNT(*) FROM (SELECT c.customer_unique_id, COUNT(DISTINCT o.order_id) as order_count FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY 1 HAVING order_count > 1)"
+                "question": "Which states have the highest average review scores?",
+                "sql": "SELECT c.customer_state, ROUND(AVG(r.review_score), 2) as avg_score, COUNT(DISTINCT r.order_id) as reviewed_orders FROM orders o JOIN customers c ON o.customer_id = c.customer_id JOIN order_reviews r ON o.order_id = r.order_id GROUP BY c.customer_state ORDER BY avg_score DESC",
             },
             {
-                "question": "What is the average lifetime value (LTV) per customer?",
-                "sql": "SELECT AVG(total_spent) FROM (SELECT c.customer_unique_id, SUM(oi.price) as total_spent FROM customers c JOIN orders o ON c.customer_id = o.customer_id JOIN order_items oi ON o.order_id = oi.order_id GROUP BY 1)"
-            }
+                "question": "Top 5 product categories by number of sellers",
+                "sql": "SELECT t.product_category_name_english, COUNT(DISTINCT oi.seller_id) as seller_count, SUM(oi.price) as revenue FROM order_items oi JOIN products p ON oi.product_id = p.product_id JOIN product_category_name_translation t ON p.product_category_name = t.product_category_name GROUP BY t.product_category_name_english ORDER BY seller_count DESC LIMIT 5",
+            },
+            {
+                "question": "Which cities have the most repeat customers?",
+                "sql": "SELECT c.customer_city, COUNT(*) as repeat_customer_count FROM (SELECT cu.customer_unique_id, cu.customer_city, COUNT(DISTINCT o.order_id) as order_count FROM customers cu JOIN orders o ON cu.customer_id = o.customer_id GROUP BY cu.customer_unique_id, cu.customer_city HAVING order_count > 1) c GROUP BY c.customer_city ORDER BY repeat_customer_count DESC LIMIT 10",
+            },
+            {
+                "question": "What is the average payment value by payment type for delivered orders?",
+                "sql": "SELECT op.payment_type, ROUND(AVG(op.payment_value), 2) as avg_payment, COUNT(DISTINCT op.order_id) as order_count, SUM(op.payment_value) as total_paid FROM orders o JOIN order_payments op ON o.order_id = op.order_id WHERE o.order_status = 'delivered' GROUP BY op.payment_type ORDER BY total_paid DESC",
+            },
+            {
+                "question": "How many installments do customers use for high-value orders?",
+                "sql": "SELECT op.payment_type, ROUND(AVG(op.payment_installments), 1) as avg_installments, ROUND(AVG(op.payment_value), 2) as avg_value FROM orders o JOIN order_payments op ON o.order_id = op.order_id WHERE op.payment_value > 500 GROUP BY op.payment_type ORDER BY avg_value DESC",
+            },
+            {
+                "question": "Which payment method has the highest average order value?",
+                "sql": "SELECT op.payment_type, ROUND(AVG(order_total.value), 2) as avg_order_value, COUNT(DISTINCT op.order_id) as order_count FROM order_payments op JOIN (SELECT order_id, SUM(price + freight_value) as value FROM order_items GROUP BY order_id) order_total ON op.order_id = order_total.order_id GROUP BY op.payment_type ORDER BY avg_order_value DESC",
+            },
+            {
+                "question": "What is the relationship between review score and order value?",
+                "sql": "SELECT r.review_score, ROUND(AVG(oi.price), 2) as avg_order_value, COUNT(DISTINCT r.order_id) as order_count FROM order_reviews r JOIN order_items oi ON r.order_id = oi.order_id GROUP BY r.review_score ORDER BY r.review_score",
+            },
+            {
+                "question": "How many customers use multiple payment methods per order?",
+                "sql": "SELECT COUNT(*) as multi_payment_orders FROM (SELECT order_id, COUNT(DISTINCT payment_type) as method_count FROM order_payments GROUP BY order_id HAVING method_count > 1)",
+            },
+            {
+                "question": "Which sellers have the highest total revenue?",
+                "sql": "SELECT s.seller_id, s.seller_state, SUM(oi.price) as revenue, COUNT(DISTINCT oi.order_id) as order_count, COUNT(DISTINCT oi.product_id) as product_count FROM order_items oi JOIN sellers s ON oi.seller_id = s.seller_id GROUP BY s.seller_id, s.seller_state ORDER BY revenue DESC LIMIT 10",
+            },
+            {
+                "question": "What is the average delivery time by seller state?",
+                "sql": "SELECT s.seller_state, ROUND(AVG(julianday(o.order_delivered_customer_date) - julianday(o.order_purchase_timestamp)), 1) as avg_delivery_days, COUNT(DISTINCT o.order_id) as order_count FROM orders o JOIN order_items oi ON o.order_id = oi.order_id JOIN sellers s ON oi.seller_id = s.seller_id WHERE o.order_status = 'delivered' AND o.order_delivered_customer_date IS NOT NULL GROUP BY s.seller_state ORDER BY avg_delivery_days",
+            },
+            {
+                "question": "Which product categories have the highest freight-to-price ratio?",
+                "sql": "SELECT t.product_category_name_english, ROUND(SUM(oi.freight_value) / SUM(oi.price) * 100, 1) as freight_pct, SUM(oi.price) as total_price, SUM(oi.freight_value) as total_freight FROM order_items oi JOIN products p ON oi.product_id = p.product_id JOIN product_category_name_translation t ON p.product_category_name = t.product_category_name GROUP BY t.product_category_name_english ORDER BY freight_pct DESC LIMIT 10",
+            },
+            {
+                "question": "How many products does each seller offer and what is their average price?",
+                "sql": "SELECT s.seller_id, s.seller_state, COUNT(DISTINCT oi.product_id) as product_count, ROUND(AVG(oi.price), 2) as avg_price, SUM(oi.price) as total_revenue FROM order_items oi JOIN sellers s ON oi.seller_id = s.seller_id GROUP BY s.seller_id, s.seller_state ORDER BY product_count DESC LIMIT 10",
+            },
+            {
+                "question": "Which sellers serve the most customer states?",
+                "sql": "SELECT s.seller_id, s.seller_state, COUNT(DISTINCT c.customer_state) as states_served, COUNT(DISTINCT o.order_id) as total_orders FROM order_items oi JOIN sellers s ON oi.seller_id = s.seller_id JOIN orders o ON oi.order_id = o.order_id JOIN customers c ON o.customer_id = c.customer_id GROUP BY s.seller_id, s.seller_state ORDER BY states_served DESC LIMIT 10",
+            },
+            {
+                "question": "How has monthly revenue trended over time for delivered orders?",
+                "sql": "SELECT strftime('%Y-%m', o.order_purchase_timestamp) as month, SUM(oi.price) as revenue, COUNT(DISTINCT o.order_id) as order_count FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE o.order_status = 'delivered' GROUP BY 1 ORDER BY 1",
+            },
+            {
+                "question": "What is the average delivery delay by month?",
+                "sql": "SELECT strftime('%Y-%m', o.order_purchase_timestamp) as month, ROUND(AVG(julianday(o.order_estimated_delivery_date) - julianday(o.order_delivered_customer_date)), 1) as avg_delay_days, COUNT(DISTINCT o.order_id) as delivered_count FROM orders o WHERE o.order_status = 'delivered' AND o.order_delivered_customer_date IS NOT NULL AND o.order_estimated_delivery_date IS NOT NULL GROUP BY 1 ORDER BY 1",
+            },
+            {
+                "question": "Which day of the week has the most order purchases?",
+                "sql": "SELECT CASE CAST(strftime('%w', o.order_purchase_timestamp) AS INTEGER) WHEN 0 THEN 'Sunday' WHEN 1 THEN 'Monday' WHEN 2 THEN 'Tuesday' WHEN 3 THEN 'Wednesday' WHEN 4 THEN 'Thursday' WHEN 5 THEN 'Friday' WHEN 6 THEN 'Saturday' END as day_name, COUNT(DISTINCT o.order_id) as order_count, SUM(oi.price) as revenue FROM orders o JOIN order_items oi ON o.order_id = oi.order_id GROUP BY 1 ORDER BY order_count DESC",
+            },
+            {
+                "question": "How does delivery time affect review scores?",
+                "sql": "SELECT CASE WHEN julianday(o.order_delivered_customer_date) - julianday(o.order_purchase_timestamp) <= 7 THEN 'Under 7 days' WHEN julianday(o.order_delivered_customer_date) - julianday(o.order_purchase_timestamp) <= 14 THEN '7-14 days' WHEN julianday(o.order_delivered_customer_date) - julianday(o.order_purchase_timestamp) <= 21 THEN '14-21 days' ELSE 'Over 21 days' END as delivery_bucket, ROUND(AVG(r.review_score), 2) as avg_review_score, COUNT(DISTINCT o.order_id) as order_count FROM orders o JOIN order_reviews r ON o.order_id = r.order_id WHERE o.order_status = 'delivered' AND o.order_delivered_customer_date IS NOT NULL GROUP BY 1 ORDER BY avg_review_score DESC",
+            },
+            {
+                "question": "What is the month-over-month growth in delivered orders?",
+                "sql": "WITH monthly_data AS (SELECT strftime('%Y-%m', o.order_purchase_timestamp) as month, COUNT(DISTINCT o.order_id) as order_count, SUM(oi.price) as revenue FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE o.order_status = 'delivered' GROUP BY 1) SELECT month, order_count, revenue, LAG(order_count) OVER (ORDER BY month) as prev_orders, ROUND((order_count - LAG(order_count) OVER (ORDER BY month)) * 100.0 / LAG(order_count) OVER (ORDER BY month), 1) as order_growth_pct FROM monthly_data ORDER BY 1",
+            },
         ]
 
     def system_message(self, **kwargs) -> str:
@@ -203,10 +265,14 @@ class DirectSchemaVanna(VannaBase):
     def run_sql(self, sql: str) -> pd.DataFrame:
         conn = sqlite3.connect(self.db_path)
         try:
-            return pd.read_sql_query(sql, conn)
+            print(f"[CHART] run_sql executing: {sql[:150]}...")
+            df = pd.read_sql_query(sql, conn)
+            print(
+                f"[CHART] run_sql result: {df.shape[0]} rows, {df.shape[1]} cols, dtypes={df.dtypes.to_dict()}"
+            )
+            return df
         except Exception as e:
-            # Handle possible sql execution errors
-            print(f"SQL Error: {e}")
+            print(f"[CHART] SQL Error: {e}")
             return pd.DataFrame()
         finally:
             conn.close()
@@ -216,7 +282,7 @@ class DirectSchemaVanna(VannaBase):
         ddl_context = "\n".join(self.get_related_ddl(question))
         doc_context = "\n".join(self.get_related_documentation(question))
         example_context = "\n\n".join(self.get_similar_question_sql(question))
-        
+
         full_prompt = (
             f"SCHEMA DDL:\n{ddl_context}\n\n"
             f"DOCUMENTATION:\n{doc_context}\n\n"
@@ -224,34 +290,55 @@ class DirectSchemaVanna(VannaBase):
             f"USER QUESTION: {question}\n\n"
             f"Generate the SQLite query for this question."
         )
-        
+
         sql = self.submit_prompt(full_prompt)
         # Clean up common LLM artifacts if any
-        sql = sql.replace('```sql', '').replace('```', '').strip()
+        sql = sql.replace("```sql", "").replace("```", "").strip()
         return sql
 
     def prepare_dataframe_for_charting(self, df: pd.DataFrame) -> pd.DataFrame:
         """Normalize SQLite result columns so aggregates stay numeric for plotting."""
+        print(
+            f"[CHART] prepare_dataframe_for_charting: input shape={df.shape}, dtypes={df.dtypes.to_dict()}"
+        )
         plot_df = df.copy()
 
         for col in plot_df.columns:
             series = plot_df[col]
-            if pd.api.types.is_numeric_dtype(series) or pd.api.types.is_datetime64_any_dtype(series):
+            if pd.api.types.is_numeric_dtype(
+                series
+            ) or pd.api.types.is_datetime64_any_dtype(series):
                 continue
 
             cleaned = series.astype(str).str.strip()
             cleaned = cleaned.str.replace(r"^\((.*)\)$", r"-\1", regex=True)
-            cleaned = cleaned.str.replace(",", "", regex=False).str.replace("$", "", regex=False).str.replace("%", "", regex=False)
+            cleaned = (
+                cleaned.str.replace(",", "", regex=False)
+                .str.replace("$", "", regex=False)
+                .str.replace("%", "", regex=False)
+            )
             numeric_series = pd.to_numeric(cleaned, errors="coerce")
 
-            if series.notna().sum() > 0 and numeric_series.notna().sum() == series.notna().sum():
+            if (
+                series.notna().sum() > 0
+                and numeric_series.notna().sum() == series.notna().sum()
+            ):
+                print(
+                    f"[CHART] Converted column '{col}' from {series.dtype} to numeric"
+                )
                 plot_df[col] = numeric_series
 
+        print(
+            f"[CHART] prepare_dataframe_for_charting: output dtypes={plot_df.dtypes.to_dict()}"
+        )
         return plot_df
 
     def _looks_like_time_column(self, col_name: str) -> bool:
         name = col_name.lower()
-        return any(keyword in name for keyword in ("date", "time", "month", "year", "week", "day", "quarter"))
+        return any(
+            keyword in name
+            for keyword in ("date", "time", "month", "year", "week", "day", "quarter")
+        )
 
     def _looks_like_id_column(self, col_name: str) -> bool:
         name = col_name.lower()
@@ -261,26 +348,83 @@ class DirectSchemaVanna(VannaBase):
         name = col_name.lower()
         if any(keyword in name for keyword in ("prev", "prior", "previous", "lag")):
             return "helper"
-        if any(keyword in name for keyword in ("growth", "pct", "percent", "rate", "ratio")):
+        if any(
+            keyword in name for keyword in ("growth", "pct", "percent", "rate", "ratio")
+        ):
             return "rate"
-        if any(keyword in name for keyword in ("revenue", "rev", "sales", "price", "amount", "value", "profit", "total", "spent")):
+        if any(
+            keyword in name
+            for keyword in (
+                "revenue",
+                "rev",
+                "sales",
+                "price",
+                "amount",
+                "value",
+                "profit",
+                "total",
+                "spent",
+            )
+        ):
             return "currency"
-        if any(keyword in name for keyword in ("count", "orders", "customers", "qty", "quantity", "volume", "score")):
+        if any(
+            keyword in name
+            for keyword in (
+                "count",
+                "orders",
+                "customers",
+                "qty",
+                "quantity",
+                "volume",
+                "score",
+            )
+        ):
             return "count"
         return "numeric"
 
     def _metric_score(self, col_name: str, context: str = "") -> int:
         family = self._metric_family(col_name)
-        score_map = {"currency": 120, "count": 100, "rate": 90, "numeric": 40, "helper": -180}
+        score_map = {
+            "currency": 120,
+            "count": 100,
+            "rate": 90,
+            "numeric": 40,
+            "helper": -180,
+        }
         score = score_map.get(family, 0)
         context = context.lower()
         name = col_name.lower()
 
-        if any(keyword in context for keyword in ("revenue", "sales", "gmv", "ltv", "value")) and family == "currency":
+        if (
+            any(
+                keyword in context
+                for keyword in ("revenue", "sales", "gmv", "ltv", "value")
+            )
+            and family == "currency"
+        ):
             score += 240
-        if any(keyword in context for keyword in ("count", "orders", "customers", "quantity", "volume", "how many")) and family == "count":
+        if (
+            any(
+                keyword in context
+                for keyword in (
+                    "count",
+                    "orders",
+                    "customers",
+                    "quantity",
+                    "volume",
+                    "how many",
+                )
+            )
+            and family == "count"
+        ):
             score += 240
-        if any(keyword in context for keyword in ("growth", "percent", "percentage", "rate")) and family == "rate":
+        if (
+            any(
+                keyword in context
+                for keyword in ("growth", "percent", "percentage", "rate")
+            )
+            and family == "rate"
+        ):
             score += 300
         if any(keyword in context for keyword in ("average", "avg")) and "avg" in name:
             score += 180
@@ -301,7 +445,19 @@ class DirectSchemaVanna(VannaBase):
             name = col_name.lower()
             if self._looks_like_time_column(col_name):
                 score += 300
-            if any(keyword in name for keyword in ("name", "category", "state", "city", "country", "segment", "type", "month")):
+            if any(
+                keyword in name
+                for keyword in (
+                    "name",
+                    "category",
+                    "state",
+                    "city",
+                    "country",
+                    "segment",
+                    "type",
+                    "month",
+                )
+            ):
                 score += 120
             if self._looks_like_id_column(col_name):
                 score -= 120
@@ -315,7 +471,9 @@ class DirectSchemaVanna(VannaBase):
             return []
 
         context = context.lower()
-        non_helper_cols = [col for col in numeric_cols if self._metric_family(col) != "helper"]
+        non_helper_cols = [
+            col for col in numeric_cols if self._metric_family(col) != "helper"
+        ]
         candidate_cols = non_helper_cols or numeric_cols
         scored_cols = sorted(
             ((self._metric_score(col, context), col) for col in candidate_cols),
@@ -325,7 +483,10 @@ class DirectSchemaVanna(VannaBase):
         if not scored_cols:
             return []
 
-        compare_query = any(keyword in context for keyword in ("compare", "comparison", "vs", "versus", "against"))
+        compare_query = any(
+            keyword in context
+            for keyword in ("compare", "comparison", "vs", "versus", "against")
+        )
         time_series = bool(x_col and self._looks_like_time_column(x_col))
         positive_cols = [col for score, col in scored_cols if score >= 0]
         family_groups = {}
@@ -342,11 +503,18 @@ class DirectSchemaVanna(VannaBase):
             for family in ("rate", "currency", "count", "numeric"):
                 cols = family_groups.get(family, [])
                 if 1 <= len(cols) <= 3:
-                    if family == "rate" and any(keyword in context for keyword in ("growth", "percent", "percentage", "rate")):
+                    if family == "rate" and any(
+                        keyword in context
+                        for keyword in ("growth", "percent", "percentage", "rate")
+                    ):
                         return [cols[0]]
                     if family != "rate" and len(cols) >= 2 and compare_query:
                         return cols
-                    if family != "rate" and len(cols) >= 2 and all(self._metric_family(col) == family for col in cols):
+                    if (
+                        family != "rate"
+                        and len(cols) >= 2
+                        and all(self._metric_family(col) == family for col in cols)
+                    ):
                         return cols[:3]
                     if cols:
                         return [cols[0]]
@@ -356,37 +524,82 @@ class DirectSchemaVanna(VannaBase):
     def _build_chart_plan(self, df: pd.DataFrame, context: str = ""):
         plot_df = self.prepare_dataframe_for_charting(df)
         numeric_cols = plot_df.select_dtypes(include=["number"]).columns.tolist()
+        print(f"[CHART] DataFrame shape: {plot_df.shape}, numeric_cols: {numeric_cols}")
+
         if plot_df.empty or not numeric_cols:
+            print(
+                f"[CHART] No chart possible: empty={plot_df.empty}, numeric_cols={numeric_cols}"
+            )
             return None
 
         if len(plot_df) == 1:
             single_row_metrics = [
-                col for col in numeric_cols
-                if self._metric_family(col) != "helper" and self._metric_score(col, context) >= 0
+                col
+                for col in numeric_cols
+                if self._metric_family(col) != "helper"
+                and self._metric_score(col, context) >= 0
             ]
-            metric_cols = single_row_metrics[:4] if len(single_row_metrics) > 1 else self._select_metric_columns(plot_df, context, x_col=None)
+            print(f"[CHART] Single row: single_row_metrics={single_row_metrics}")
+            if single_row_metrics:
+                metric_cols = single_row_metrics[:4]
+            else:
+                metric_cols = self._select_metric_columns(plot_df, context, x_col=None)
+
             if not metric_cols:
+                print(f"[CHART] Single row: no usable metrics, returning None")
                 return None
+
             if len(metric_cols) == 1:
+                print(f"[CHART] Plan: indicator, metric={metric_cols[0]}")
                 return {"kind": "indicator", "df": plot_df, "metric_cols": metric_cols}
+            print(f"[CHART] Plan: metric_bar, metrics={metric_cols[:4]}")
             return {"kind": "metric_bar", "df": plot_df, "metric_cols": metric_cols[:4]}
 
         x_col = self._select_label_column(plot_df)
         if not x_col:
-            return None
+            print(
+                f"[CHART] No label column found, all columns are numeric: {plot_df.columns.tolist()}"
+            )
+            print(
+                f"[CHART] Fallback: using first column '{plot_df.columns[0]}' as label"
+            )
+            x_col = plot_df.columns[0]
+            numeric_cols = [c for c in plot_df.columns if c != x_col]
+            if not numeric_cols:
+                print(f"[CHART] Fallback failed: no remaining columns for metrics")
+                return None
+            metric_cols = self._select_metric_columns(plot_df, context, x_col=x_col)
+        else:
+            metric_cols = self._select_metric_columns(plot_df, context, x_col=x_col)
 
-        metric_cols = self._select_metric_columns(plot_df, context, x_col=x_col)
         if not metric_cols:
+            print(f"[CHART] No metric columns found, returning None")
             return None
 
-        time_series = self._looks_like_time_column(x_col) or pd.api.types.is_datetime64_any_dtype(plot_df[x_col])
+        print(f"[CHART] x_col='{x_col}', metric_cols={metric_cols}")
+
+        time_series = self._looks_like_time_column(
+            x_col
+        ) or pd.api.types.is_datetime64_any_dtype(plot_df[x_col])
         label_lengths = plot_df[x_col].astype(str).str.len()
-        horizontal = (not time_series) and (len(plot_df) > 8 or label_lengths.max() > 20 or label_lengths.mean() > 14)
+        horizontal = (not time_series) and (
+            len(plot_df) > 8 or label_lengths.max() > 20 or label_lengths.mean() > 14
+        )
 
         if time_series:
             if len(metric_cols) > 1:
                 kind = "multi_line"
-            elif any(keyword in context.lower() for keyword in ("trend", "over-time", "over time", "month-over-month", "mom", "growth")):
+            elif any(
+                keyword in context.lower()
+                for keyword in (
+                    "trend",
+                    "over-time",
+                    "over time",
+                    "month-over-month",
+                    "mom",
+                    "growth",
+                )
+            ):
                 kind = "line"
             else:
                 kind = "bar"
@@ -395,6 +608,9 @@ class DirectSchemaVanna(VannaBase):
         else:
             kind = "horizontal_bar" if horizontal else "bar"
 
+        print(
+            f"[CHART] Plan: kind={kind}, time_series={time_series}, rows={len(plot_df)}"
+        )
         return {"kind": kind, "df": plot_df, "x_col": x_col, "metric_cols": metric_cols}
 
     def plotly_system_message(self, **kwargs) -> str:
@@ -414,13 +630,15 @@ class DirectSchemaVanna(VannaBase):
             "Only return Python code, NO markdown, NO explanations."
         )
 
-    def generate_plotly_code(self, question: str, sql: str, df: pd.DataFrame, **kwargs) -> str:
+    def generate_plotly_code(
+        self, question: str, sql: str, df: pd.DataFrame, **kwargs
+    ) -> str:
         # Construct a prompt for plotting
         plot_df = self.prepare_dataframe_for_charting(df)
         columns = ", ".join(plot_df.columns)
         # Increase sample to 10 so AI sees the data trend
         sample = plot_df.head(10).to_string()
-        
+
         prompt = (
             f"Question: {question}\n"
             f"SQL: {sql}\n"
@@ -428,34 +646,50 @@ class DirectSchemaVanna(VannaBase):
             f"DataFrame Sample (10 rows):\n{sample}\n\n"
             f"Write the Plotly Express code. Reference specific column names for x and y."
         )
-        
+
         code = call_llm(self.plotly_system_message(), prompt)
         # Clean up any markdown
-        code = code.replace('```python', '').replace('```', '').strip()
+        code = code.replace("```python", "").replace("```", "").strip()
         return code
 
     def get_deterministic_figure(self, df: pd.DataFrame, title: str | None = None):
         """Rule-based plotter for common analytical result shapes without LLM fallback."""
         import plotly.graph_objects as go
+
+        print(
+            f"[CHART] get_deterministic_figure called: shape={df.shape}, columns={df.columns.tolist()}"
+        )
         chart_plan = self._build_chart_plan(df, context=title or "")
         if not chart_plan:
+            print(f"[CHART] No chart plan returned, cannot build figure")
             return None
 
         plot_df = chart_plan["df"]
         kind = chart_plan["kind"]
         metric_cols = chart_plan["metric_cols"]
 
+        print(f"[CHART] Building figure: kind={kind}, metrics={metric_cols}")
+
         colors = ["#ef4444", "#f97316", "#3b82f6", "#22c55e"]
         fig = go.Figure()
 
         if kind == "indicator":
             metric_col = metric_cols[0]
-            value = pd.to_numeric(plot_df.iloc[0][metric_col], errors="coerce")
+            raw_value = plot_df.iloc[0][metric_col]
+            value = pd.to_numeric(raw_value, errors="coerce")
             if pd.isna(value):
+                print(
+                    f"[CHART] Indicator: value for '{metric_col}' is NaN (raw={raw_value}), cannot render"
+                )
                 return None
 
+            print(f"[CHART] Indicator: value={value}, metric={metric_col}")
             family = self._metric_family(metric_col)
-            number_config = {"valueformat": ",.0f"} if family == "count" else {"valueformat": ",.2f"}
+            number_config = (
+                {"valueformat": ",.0f"}
+                if family == "count"
+                else {"valueformat": ",.2f"}
+            )
             if family == "currency":
                 number_config["prefix"] = "$"
             elif family == "rate":
@@ -477,23 +711,33 @@ class DirectSchemaVanna(VannaBase):
                 margin=dict(l=20, r=20, t=50, b=20),
                 font=dict(family="Arial, sans-serif", size=14),
             )
+            print(f"[CHART] Indicator figure built successfully")
             return fig
 
         x_col = chart_plan["x_col"]
         x_values = plot_df[x_col].tolist()
         yaxis_family = self._metric_family(metric_cols[0])
 
+        print(
+            f"[CHART] Chart: x_col='{x_col}', x_values_count={len(x_values)}, yaxis_family={yaxis_family}"
+        )
+
         for index, metric_col in enumerate(metric_cols):
-            y_values = pd.to_numeric(plot_df[metric_col], errors="coerce")
-            if y_values.isna().any():
-                return None
+            y_series = pd.to_numeric(plot_df[metric_col], errors="coerce")
+            nan_count = y_series.isna().sum()
+            if nan_count > 0:
+                print(
+                    f"[CHART] Metric '{metric_col}': {nan_count} NaN values found, filling with 0"
+                )
+                y_series = y_series.fillna(0)
+            y_values = y_series.tolist()
 
             color = colors[index % len(colors)]
             if kind in ("line", "multi_line"):
                 fig.add_trace(
                     go.Scatter(
                         x=x_values,
-                        y=y_values.tolist(),
+                        y=y_values,
                         mode="lines+markers",
                         line=dict(color=color, width=3),
                         marker=dict(color=color, size=7),
@@ -503,7 +747,7 @@ class DirectSchemaVanna(VannaBase):
             elif kind == "horizontal_bar":
                 fig.add_trace(
                     go.Bar(
-                        x=y_values.tolist(),
+                        x=y_values,
                         y=x_values,
                         orientation="h",
                         marker_color=color,
@@ -514,7 +758,7 @@ class DirectSchemaVanna(VannaBase):
                 fig.add_trace(
                     go.Bar(
                         x=x_values,
-                        y=y_values.tolist(),
+                        y=y_values,
                         marker_color=color,
                         name=metric_col,
                     )
@@ -526,13 +770,18 @@ class DirectSchemaVanna(VannaBase):
             height = min(900, max(420, 90 + len(plot_df) * 28))
         elif kind == "metric_bar":
             x_values = [col.replace("_", " ").title() for col in metric_cols]
-            y_values = [float(pd.to_numeric(plot_df.iloc[0][col], errors="coerce")) for col in metric_cols]
+            y_values = []
+            for col in metric_cols:
+                val = pd.to_numeric(plot_df.iloc[0][col], errors="coerce")
+                if pd.isna(val):
+                    val = 0
+                y_values.append(float(val))
             fig = go.Figure(
                 data=[
                     go.Bar(
                         x=x_values,
                         y=y_values,
-                        marker_color=colors[:len(metric_cols)],
+                        marker_color=colors[: len(metric_cols)],
                         showlegend=False,
                     )
                 ]
@@ -550,7 +799,9 @@ class DirectSchemaVanna(VannaBase):
             margin=dict(l=100 if kind == "horizontal_bar" else 80, r=30, t=60, b=90),
             font=dict(family="Arial, sans-serif", size=12),
             showlegend=show_legend,
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+            legend=dict(
+                orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
+            ),
             bargap=0.2,
         )
         if kind == "grouped_bar":
@@ -568,7 +819,9 @@ class DirectSchemaVanna(VannaBase):
 
         all_values = []
         for metric_col in metric_cols:
-            numeric_values = pd.to_numeric(plot_df[metric_col], errors="coerce").dropna().tolist()
+            numeric_values = (
+                pd.to_numeric(plot_df[metric_col], errors="coerce").dropna().tolist()
+            )
             all_values.extend(numeric_values)
 
         if all_values and min(all_values) >= 0:
@@ -603,14 +856,19 @@ class DirectSchemaVanna(VannaBase):
         elif kind == "metric_bar":
             fig.update_layout(xaxis_title="Metric", yaxis_title="Value")
         else:
-            fig.update_layout(xaxis_title=x_col, yaxis_title=metric_cols[0] if len(metric_cols) == 1 else "Value")
+            fig.update_layout(
+                xaxis_title=x_col,
+                yaxis_title=metric_cols[0] if len(metric_cols) == 1 else "Value",
+            )
 
+        print(f"[CHART] Figure built successfully: kind={kind}, traces={len(fig.data)}")
         return fig
 
     def get_plotly_figure(self, plotly_code: str, df: pd.DataFrame, **kwargs):
         """Execute the code and return a Plotly Figure object."""
         try:
             import plotly.express as px
+
             # Create a local namespace for execution
             local_vars = {"df": df, "px": px, "fig": None}
             exec(plotly_code, {}, local_vars)
@@ -620,14 +878,30 @@ class DirectSchemaVanna(VannaBase):
             return None
 
     # --- Abstract Method Stubs (Required by VannaBase 0.x) ---
-    def add_ddl(self, ddl: str, **kwargs): pass
-    def add_documentation(self, documentation: str, **kwargs): pass
-    def add_question_sql(self, question: str, sql: str, **kwargs): pass
-    def get_training_data(self, **kwargs) -> pd.DataFrame: return pd.DataFrame()
-    def remove_training_data(self, id: str, **kwargs) -> bool: return True
-    def generate_embedding(self, data: str, **kwargs) -> list: return []
-    def user_message(self, message: str, **kwargs) -> str: return message
-    def assistant_message(self, message: str, **kwargs) -> str: return message
+    def add_ddl(self, ddl: str, **kwargs):
+        pass
+
+    def add_documentation(self, documentation: str, **kwargs):
+        pass
+
+    def add_question_sql(self, question: str, sql: str, **kwargs):
+        pass
+
+    def get_training_data(self, **kwargs) -> pd.DataFrame:
+        return pd.DataFrame()
+
+    def remove_training_data(self, id: str, **kwargs) -> bool:
+        return True
+
+    def generate_embedding(self, data: str, **kwargs) -> list:
+        return []
+
+    def user_message(self, message: str, **kwargs) -> str:
+        return message
+
+    def assistant_message(self, message: str, **kwargs) -> str:
+        return message
+
 
 # Singleton instance
 vn_engine = DirectSchemaVanna()
