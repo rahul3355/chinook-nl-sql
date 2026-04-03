@@ -1,4 +1,4 @@
-import os
+﻿import os
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -8,6 +8,8 @@ OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 MODEL_NAME = "x-ai/grok-4.1-fast"
 SUGGESTION_MODEL_NAME = "openai/gpt-oss-120b"
 SUGGESTION_PROVIDER_ORDER = ["groq"]
+REASONING_MODEL_NAME = "google/gemini-3-flash-preview"
+REASONING_EFFORT = "high"
 DB_PATH = "data/olist.sqlite"
 HISTORY_PATH = "history/query_history.json"
 PROMPTS_DIR = "prompts"

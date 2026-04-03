@@ -3,6 +3,7 @@ import pandas as pd
 from vanna.base import VannaBase
 from src.llm import call_llm
 from src.config import DB_PATH
+from src.schema_discovery import SchemaDiscovery
 
 
 class DirectSchemaVanna(VannaBase):
@@ -10,127 +11,9 @@ class DirectSchemaVanna(VannaBase):
         super().__init__(config=config)
         self.db_path = DB_PATH
 
-        # Olist DDL (all 11 tables)
-        self.ddl = """
-        CREATE TABLE customers (
-            customer_id TEXT PRIMARY KEY,
-            customer_unique_id TEXT,
-            customer_zip_code_prefix INTEGER,
-            customer_city TEXT,
-            customer_state TEXT
-        );
-
-        CREATE TABLE geolocation (
-            geolocation_zip_code_prefix INTEGER,
-            geolocation_lat REAL,
-            geolocation_lng REAL,
-            geolocation_city TEXT,
-            geolocation_state TEXT
-        );
-
-        CREATE TABLE order_items (
-            order_id TEXT,
-            order_item_id INTEGER,
-            product_id TEXT,
-            seller_id TEXT,
-            shipping_limit_date TEXT,
-            price REAL,
-            freight_value REAL,
-            PRIMARY KEY (order_id, order_item_id)
-        );
-
-        CREATE TABLE order_payments (
-            order_id TEXT,
-            payment_sequential INTEGER,
-            payment_type TEXT,
-            payment_installments INTEGER,
-            payment_value REAL,
-            PRIMARY KEY (order_id, payment_sequential)
-        );
-
-        CREATE TABLE order_reviews (
-            review_id TEXT PRIMARY KEY,
-            order_id TEXT,
-            review_score INTEGER,
-            review_comment_title TEXT,
-            review_comment_message TEXT,
-            review_creation_date TEXT,
-            review_answer_timestamp TEXT
-        );
-
-        CREATE TABLE orders (
-            order_id TEXT PRIMARY KEY,
-            customer_id TEXT,
-            order_status TEXT,
-            order_purchase_timestamp TEXT,
-            order_approved_at TEXT,
-            order_delivered_carrier_date TEXT,
-            order_delivered_customer_date TEXT,
-            order_estimated_delivery_date TEXT
-        );
-
-        CREATE TABLE products (
-            product_id TEXT PRIMARY KEY,
-            product_category_name TEXT,
-            product_name_lenght REAL,
-            product_description_lenght REAL,
-            product_photos_qty REAL,
-            product_weight_g REAL,
-            product_length_cm REAL,
-            product_height_cm REAL,
-            product_width_cm REAL
-        );
-
-        CREATE TABLE sellers (
-            seller_id TEXT PRIMARY KEY,
-            seller_zip_code_prefix INTEGER,
-            seller_city TEXT,
-            seller_state TEXT
-        );
-
-        CREATE TABLE product_category_name_translation (
-            product_category_name TEXT PRIMARY KEY,
-            product_category_name_english TEXT
-        );
-
-        CREATE TABLE leads_qualified (
-            mql_id TEXT PRIMARY KEY,
-            first_contact_date TEXT,
-            landing_page_id TEXT,
-            origin TEXT
-        );
-
-        CREATE TABLE leads_closed (
-            mql_id TEXT PRIMARY KEY,
-            seller_id TEXT,
-            sdr_id TEXT,
-            sr_id TEXT,
-            won_date TEXT,
-            business_segment TEXT,
-            lead_type TEXT,
-            lead_behaviour_profile TEXT,
-            has_company INTEGER,
-            has_gtin INTEGER,
-            average_stock TEXT,
-            business_type TEXT,
-            declared_product_catalog_size REAL,
-            declared_monthly_revenue REAL
-        );
-        """
-
-        self.documentation = [
-            "Revenue is the sum of the 'price' column in the 'order_items' table.",
-            "Total freight is the sum of the 'freight_value' column in 'order_items'.",
-            "An order can have multiple items, each as a row in 'order_items'.",
-            "To get English names for categories, join 'products' with 'product_category_name_translation'.",
-            "Orders are linked to customers via 'customer_id'.",
-            "Sellers are in the 'sellers' table, linked to 'order_items' via 'seller_id'.",
-            "Review scores (1-5) are in 'order_reviews'.",
-            "Lead data is in 'leads_qualified' and 'leads_closed', linked via 'mql_id'.",
-            "IMPORTANT: 'customer_id' is unique per order. To track a single human across multiple orders (Retention/LTV), you MUST use 'customer_unique_id' from the 'customers' table.",
-            "To calculate Month-over-Month (MoM) growth, use a Common Table Expression (CTE) and the 'LAG' window function on aggregated revenue.",
-            "IMPORTANT: Olist products do NOT have human-readable names (e.g. 'iPhone'). They are identified by 'product_id'. When a user asks for 'products', ALWAYS return the 'product_category_name_english' from the translation table so they can understand what the products are.",
-        ]
+        self.schema_graph = SchemaDiscovery(self.db_path).discover()
+        self.ddl = self.schema_graph.get_ddl()
+        self.documentation = self.schema_graph.get_documentation()
 
         # Gold Standard Q&A for high accuracy
         self.train_data = [

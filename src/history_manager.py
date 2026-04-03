@@ -1,4 +1,4 @@
-import json
+﻿import json
 import os
 from datetime import datetime
 from uuid import uuid4
@@ -19,6 +19,7 @@ def _normalize_entry(entry: dict, idx: int | None = None) -> dict:
     normalized["answer"] = normalized.get("answer", "")
     normalized["row_count"] = normalized.get("row_count", 0)
     normalized["suggestions"] = normalized.get("suggestions") or []
+    normalized["reasoning"] = normalized.get("reasoning") or []
     return normalized
 
 
@@ -34,6 +35,7 @@ def save_history(
     answer: str,
     row_count: int = 0,
     suggestions: list | None = None,
+    reasoning: list | None = None,
 ) -> str:
     """Append one entry to the query history JSON file and return its id."""
     history = load_history()
@@ -45,6 +47,7 @@ def save_history(
         "answer": answer,
         "row_count": row_count,
         "suggestions": suggestions or [],
+        "reasoning": reasoning or [],
     }
     history.append(entry)
     _persist(history)
@@ -83,3 +86,16 @@ def delete_entry(idx: int) -> bool:
         _persist(history)
         return True
     return False
+
+
+def get_conversation_context(n: int = 3) -> list[dict]:
+    """Get last n conversation turns for context."""
+    history = load_history()
+    return [
+        {
+            "question": h.get("question", ""),
+            "answer": h.get("answer", ""),
+            "sql": h.get("sql", ""),
+        }
+        for h in history[-n:]
+    ]

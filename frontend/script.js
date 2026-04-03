@@ -1,4 +1,4 @@
-// ─── Config ───────────────────────────────────────────────
+﻿// ─── Config ───────────────────────────────────────────────
 const LOADING_WORDS = [
   'Generating','Thinking','Pondering','Analyzing',
   'Inspecting','Exploring','Reviewing','Calculating',
@@ -28,7 +28,6 @@ function escapeHtml(s) {
 
 function suggestionMarkup(suggestions = []) {
   if (!suggestions || suggestions.length === 0) return '';
-
   return `
     <div class="suggestion-chips-container">
       <div class="suggestion-label">Suggested next steps</div>
@@ -43,7 +42,6 @@ function suggestionMarkup(suggestions = []) {
 
 function attachMessageInteractions(root) {
   if (!root) return;
-
   const chartBtn = root.querySelector('.chart-trigger-btn');
   if (chartBtn && !chartBtn.dataset.bound) {
     chartBtn.dataset.bound = '1';
@@ -53,7 +51,6 @@ function attachMessageInteractions(root) {
       generateChart(q, s, chartBtn);
     });
   }
-
   root.querySelectorAll('.suggestion-chip').forEach(btn => {
     if (btn.dataset.bound) return;
     btn.dataset.bound = '1';
@@ -85,7 +82,6 @@ function scrollToBottom() {
 function resetInputHeight() {
   questionInput.style.height = 'auto';
 }
-
 
 // ─── History Sidebar ──────────────────────────────────────
 async function fetchHistory() {
@@ -240,9 +236,25 @@ function appendLoadingBubble() {
   div.className = 'message assistant-message';
   div.id = 'loading-msg';
   div.innerHTML = `
-    <div class="thinking-indicator">
-      <div class="thinking-spinner"></div>
-      <span id="thinking-text">${LOADING_WORDS[0]}...</span>
+    <div class="assistant-avatar">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      </svg>
+    </div>
+    <div class="assistant-body">
+      <div class="thinking-indicator">
+        <div class="thinking-spinner"></div>
+        <span id="thinking-text">${LOADING_WORDS[0]}...</span>
+      </div>
+      <div class="thinking-drawer" id="thinking-drawer">
+        <button class="thinking-toggle" onclick="toggleThinking()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+          <span>Show thinking</span>
+        </button>
+        <div class="thinking-content" id="thinking-content"></div>
+      </div>
     </div>`;
   messagesEl.appendChild(div);
   scrollToBottom();
@@ -328,46 +340,43 @@ async function generateChart(question, sql, btn) {
     alert("Plotly library not loaded.");
     return;
   }
-  
   btn.disabled = true;
   btn.innerHTML = `
     <div class="thinking-spinner" style="width:12px; height:12px; border-width:2px"></div>
     Generating...
   `;
-  
   try {
     const res = await fetch('/generate_chart', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question, sql })
     });
-    
     if (!res.ok) {
       const e = await res.json().catch(() => ({}));
       throw new Error(e.detail || "Chart generation failed");
     }
-    
     const data = await res.json();
+    console.log("[FE] === RESPONSE ===");
+    console.log("[FE] Answer:", data.answer);
+    console.log("[FE] SQL:", data.sql);
+    console.log("[FE] Row count:", data.row_count);
+    console.log("[FE] Reasoning:", data.reasoning);
+    if (data.reasoning && data.reasoning.length > 0) {
+      data.reasoning.forEach((step, i) => {
+        console.log("[FE] Reasoning step " + (i+1) + ":", step);
+      });
+    }
     const figure = JSON.parse(data.chart_json);
-    
     const chartDiv = document.createElement('div');
     chartDiv.className = 'chart-container';
     const chartId = 'chart-' + Date.now();
     chartDiv.id = chartId;
-    
     const body = btn.parentElement.parentElement;
     const message = body.closest('.message');
     body.classList.add('has-chart');
-    if (message) {
-      message.classList.add('expanded-chart');
-    }
+    if (message) message.classList.add('expanded-chart');
     body.appendChild(chartDiv);
-    
-    Plotly.newPlot(chartId, figure.data, figure.layout, {
-      responsive: true,
-      displayModeBar: false
-    });
-    
+    Plotly.newPlot(chartId, figure.data, figure.layout, { responsive: true, displayModeBar: false });
     btn.parentElement.style.display = 'none';
     setTimeout(scrollToBottom, 300);
   } catch (err) {
@@ -381,6 +390,79 @@ async function generateChart(question, sql, btn) {
       Failed. Try again?
     `;
   }
+}
+
+async function loadCorrelationAnalysis(messageEl, question, sql) {
+  if (!messageEl) return;
+  const container = messageEl.querySelector('.message-artifacts');
+  if (!container) return;
+  const loadingEl = document.createElement('div');
+  loadingEl.className = 'correlation-loading';
+  loadingEl.innerHTML = `
+    <div class="thinking-spinner" style="width:12px;height:12px;border-width:2px"></div>
+    <span>Analyzing key drivers across all dimensions...</span>
+  `;
+  container.appendChild(loadingEl);
+  scrollToBottom();
+  try {
+    const res = await fetch('/correlation_analysis', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question, sql })
+    });
+    if (!res.ok) throw new Error('Correlation analysis failed');
+    const data = await res.json();
+    console.log("[FE] === RESPONSE ===");
+    console.log("[FE] Answer:", data.answer);
+    console.log("[FE] SQL:", data.sql);
+    console.log("[FE] Row count:", data.row_count);
+    console.log("[FE] Reasoning:", data.reasoning);
+    if (data.reasoning && data.reasoning.length > 0) {
+      data.reasoning.forEach((step, i) => {
+        console.log("[FE] Reasoning step " + (i+1) + ":", step);
+      });
+    }
+    loadingEl.remove();
+    if (data.error) return;
+    const markup = correlationMarkup(data);
+    if (!markup) return;
+    const cardEl = document.createElement('div');
+    cardEl.className = 'correlation-card';
+    cardEl.innerHTML = markup;
+    container.appendChild(cardEl);
+    scrollToBottom();
+  } catch (err) {
+    console.error('[CORR] Error:', err);
+    loadingEl.remove();
+  }
+}
+
+function correlationMarkup(data) {
+  const drivers = (data.attribution || []).slice(0, 4);
+  if (drivers.length === 0) return '';
+  const driversHtml = drivers.map((d, i) => `
+    <div class="driver-item">
+      <span class="driver-rank">${i + 1}</span>
+      <div class="driver-info">
+        <span class="driver-name">${escapeHtml(d.dimension.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()))}</span>
+        <span class="driver-value">${escapeHtml(d.top_value || 'N/A')}</span>
+      </div>
+      <div class="driver-bar-container">
+        <div class="driver-bar" style="width:${Math.min(d.importance * 100, 100)}%"></div>
+      </div>
+      <span class="driver-pct">${(d.importance * 100).toFixed(0)}%</span>
+    </div>
+  `).join('');
+  return `
+    <div class="correlation-header">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+      <span>Key Drivers</span>
+    </div>
+    <div class="correlation-drivers">${driversHtml}</div>
+    <div class="correlation-explanation">${escapeHtml(data.explanation || '').replace(/\n/g, '<br>')}</div>
+  `;
 }
 
 function resolveError(text) {
@@ -412,6 +494,141 @@ function toggleDetails(uid) {
   toggle.querySelector('span').textContent = open ? 'Hide details' : 'Show details';
 }
 
+function toggleThinking() {
+  const drawer = document.getElementById('thinking-drawer');
+  const btn = drawer?.querySelector('.thinking-toggle span');
+  if (drawer) {
+    const isOpen = drawer.classList.toggle('visible');
+    if (btn) btn.textContent = isOpen ? 'Hide thinking' : 'Show thinking';
+    const chevron = drawer.querySelector('.thinking-toggle svg');
+    if (chevron) chevron.style.transform = isOpen ? 'rotate(180deg)' : '';
+  }
+}
+
+function getThinkingContent() {
+  return document.getElementById('thinking-content');
+}
+
+function getThinkingDrawer() {
+  return document.getElementById('thinking-drawer');
+}
+
+function showReasoning(reasoning) {
+  const drawer = getThinkingDrawer();
+  const content = getThinkingContent();
+  if (!drawer || !content) return;
+  drawer.classList.add('visible');
+  const btn = drawer.querySelector('.thinking-toggle span');
+  if (btn) btn.textContent = 'Hide thinking';
+  content.innerHTML = '';
+
+  // Check if this is analytical agent output (has steps with action/table/sql)
+  const hasSteps = Array.isArray(reasoning) && reasoning.some(r => r.action && (r.table || r.sql || r.result_summary));
+
+  if (hasSteps) {
+    showAnalyticalSteps(reasoning, content);
+  } else {
+    showSimpleReasoning(reasoning, content);
+  }
+  content.scrollTop = content.scrollHeight;
+}
+
+function showAnalyticalSteps(reasoning, content) {
+  const header = document.createElement('div');
+  header.className = 'thinking-step thinking-planning';
+  header.innerHTML = '<span class="thinking-icon">\uD83E\uDDE0</span><span>Multi-Step Analysis (Gemini 3 Flash)</span>';
+  content.appendChild(header);
+
+  reasoning.forEach((step, i) => {
+    const stepEl = document.createElement('div');
+    stepEl.className = 'analytical-step';
+    
+    let contentHtml = '';
+    if (step.action === 'explore') {
+      const schemaKeys = step.schema && step.schema.columns ? Object.keys(step.schema.columns).join(', ') : 'N/A';
+      contentHtml = `
+        <div class="step-header">Step ${step.step}: Explore ${escapeHtml(step.table || '')}</div>
+        <div class="step-reasoning">${escapeHtml(step.reasoning || '')}</div>
+        <div class="step-schema">Schema: ${escapeHtml(schemaKeys)}</div>
+        <div class="step-sample">Sample: ${escapeHtml(JSON.stringify(step.sample_row || []))}</div>
+      `;
+    } else if (step.action === 'query') {
+      contentHtml = `
+        <div class="step-header">Step ${step.step}: Execute Query</div>
+        <div class="step-reasoning">${escapeHtml(step.reasoning || '')}</div>
+        <pre class="step-sql">${escapeHtml(step.sql || '')}</pre>
+        <div class="step-result">${escapeHtml(step.result_summary || '')}</div>
+        <div class="step-preview">${escapeHtml(step.result_preview || '')}</div>
+      `;
+    } else if (step.action === 'query_error') {
+      contentHtml = `
+        <div class="step-header">Step ${step.step}: Query Failed</div>
+        <div class="step-reasoning">${escapeHtml(step.reasoning || '')}</div>
+        <pre class="step-sql">${escapeHtml(step.sql || '')}</pre>
+        <div class="step-error">${escapeHtml(step.error || '')}</div>
+      `;
+    } else if (step.action === 'answer') {
+      contentHtml = `
+        <div class="step-header">Step ${step.step}: Synthesize Answer</div>
+        <div class="step-reasoning">${escapeHtml(step.reasoning || '')}</div>
+      `;
+    } else {
+      contentHtml = `
+        <div class="step-header">Step ${step.step}: ${escapeHtml(step.action || 'Unknown')}</div>
+        <div class="step-reasoning">${escapeHtml(step.reasoning || '')}</div>
+      `;
+    }
+    
+    stepEl.innerHTML = contentHtml;
+    content.appendChild(stepEl);
+  });
+}
+
+function showSimpleReasoning(reasoning, content) {
+  const header = document.createElement('div');
+  header.className = 'thinking-step thinking-planning';
+  header.innerHTML = '<span class="thinking-icon">\uD83E\uDDE0</span><span>Reasoning (Gemini 3 Flash)</span>';
+  content.appendChild(header);
+
+  if (Array.isArray(reasoning)) {
+    reasoning.forEach((step, i) => {
+      const stepEl = document.createElement('div');
+      stepEl.className = 'reasoning-step';
+      const text = typeof step === 'string' ? step : (step.text || step.content || JSON.stringify(step));
+      stepEl.innerHTML = `
+        <div class="reasoning-step-number">${i + 1}</div>
+        <div class="reasoning-step-content">${formatReasoning(text)}</div>
+      `;
+      content.appendChild(stepEl);
+    });
+  } else if (typeof reasoning === 'string') {
+    const stepEl = document.createElement('div');
+    stepEl.className = 'reasoning-step';
+    stepEl.innerHTML = `
+      <div class="reasoning-step-number">1</div>
+      <div class="reasoning-step-content">${formatReasoning(reasoning)}</div>
+    `;
+    content.appendChild(stepEl);
+  }
+}
+
+function formatReasoning(text) {
+  text = escapeHtml(text);
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  text = text.replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre class="reasoning-sql"><code>$2</code></pre>');
+  text = text.replace(/\n/g, '<br>');
+  return text;
+}
+
+function detectIntent(question) {
+  const lowered = question.toLowerCase();
+  const causalKeywords = ['driving', 'causes', 'what caused', 'why did', 'why is', 'spike', 'dip', 'surge', 'drop', 'decline', 'increase', 'what drove', 'what explains', 'root cause', 'reason for', 'biggest change', 'what changed', 'what happened'];
+  const timeSeriesKeywords = ['trend', 'over time', 'monthly', 'yearly', 'growth', 'month-over-month', 'mom', 'yoy', 'time series', 'how has', 'how have', 'over the months'];
+  if (causalKeywords.some(kw => lowered.includes(kw))) return 'causal';
+  if (timeSeriesKeywords.some(kw => lowered.includes(kw))) return 'time_series';
+  return 'standard';
+}
+
 // ─── Send ─────────────────────────────────────────────────
 async function sendMessage() {
   if (isLoading) return;
@@ -437,8 +654,26 @@ async function sendMessage() {
       throw new Error(e.detail || `Server error ${res.status}`);
     }
     const data = await res.json();
+    console.log("[FE] === RESPONSE ===");
+    console.log("[FE] Answer:", data.answer);
+    console.log("[FE] SQL:", data.sql);
+    console.log("[FE] Row count:", data.row_count);
+    console.log("[FE] Reasoning:", data.reasoning);
+    if (data.reasoning && data.reasoning.length > 0) {
+      data.reasoning.forEach((step, i) => {
+        console.log("[FE] Reasoning step " + (i+1) + ":", step);
+      });
+    }
     const visibleSuggestions = data.suggestions || [];
-    resolveLoadingBubble(question, data.answer, data.sql, data.row_count, data.timestamp, visibleSuggestions, data.history_id);
+    const messageEl = resolveLoadingBubble(question, data.answer, data.sql, data.row_count, data.timestamp, visibleSuggestions, data.history_id);
+
+    if (data.reasoning && data.reasoning.length > 0) {
+      showReasoning(data.reasoning);
+    }
+
+    if (data.trigger_rca && data.history_id && data.row_count > 0) {
+      loadCorrelationAnalysis(messageEl, question, data.sql);
+    }
     fetchHistory();
   } catch (err) {
     resolveError(err.message || 'Something went wrong. Please try again.');
@@ -474,3 +709,4 @@ window.addEventListener('resize', () => {
         }
     });
 });
+
