@@ -51,7 +51,13 @@ pip install -r requirements.txt
 
 ### Step 3 — Add your API key
 
-Create a `.env` file in the project root with this content:
+Copy the example file and add your API key:
+
+```
+copy .env.example .env
+```
+
+Then edit `.env` and replace the placeholder with your actual key:
 
 ```
 OPENROUTER_API_KEY=your_openrouter_key_here
@@ -64,7 +70,7 @@ Get a free key at [openrouter.ai](https://openrouter.ai).
 ### Step 4 — Run the app
 
 ```
-uvicorn src.api:app --host 0.0.0.0 --port 8000
+uvicorn src.api:app --host localhost --port 8000
 ```
 
 Open **http://localhost:8000** in your browser.

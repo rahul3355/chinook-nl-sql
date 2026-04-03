@@ -58,43 +58,43 @@ body {
 }
 .new-chat-btn:hover { background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.35); color: #a5b4fc; }
 
-/* Sample questions section — dark sidebar theme */
+/* Sample questions section — light mode */
 .sample-section {
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid #e5e7eb;
   flex-shrink: 0;
-  background: #0a0b16;
+  background: #ffffff;
 }
 .sample-toggle-btn {
   width: 100%; display: flex; align-items: center; gap: 8px;
   padding: 13px 18px; border: none; background: transparent;
-  color: #4b5563; font-family: inherit; font-size: 12px; font-weight: 500;
+  color: #374151; font-family: inherit; font-size: 12px; font-weight: 500;
   cursor: pointer; transition: color 0.15s, background 0.15s; text-align: left;
 }
-.sample-toggle-btn:hover { color: #6b7280; background: rgba(255,255,255,0.03); }
-.sq-chevron { width: 13px; height: 13px; margin-left: auto; transition: transform 0.22s ease; }
+.sample-toggle-btn:hover { color: #111827; background: rgba(0,0,0,0.04); }
+.sq-chevron { width: 13px; height: 13px; margin-left: auto; transition: transform 0.22s ease; color: #6b7280; }
 .sample-toggle-btn.open .sq-chevron { transform: rotate(180deg); }
 
 .sample-panel {
   max-height: 0; overflow: hidden;
   transition: max-height 0.3s ease;
   overflow-y: auto;
-  background: #0a0b16;
+  background: #ffffff;
 }
 .sample-panel.visible { max-height: 320px; }
 .sample-panel::-webkit-scrollbar { width: 3px; }
-.sample-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
+.sample-panel::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
 
 .sample-group-label {
   font-size: 9px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.09em; color: #2d3748;
+  letter-spacing: 0.09em; color: #9ca3af;
   padding: 10px 18px 4px; pointer-events: none;
 }
 .sq {
-  padding: 7px 18px; font-size: 12px; color: #4b5563;
+  padding: 7px 18px; font-size: 12px; color: #374151;
   cursor: pointer; transition: background 0.13s, color 0.13s;
   line-height: 1.5;
 }
-.sq:hover { background: rgba(255,255,255,0.04); color: #6b7280; }
+.sq:hover { background: #f3f4f6; color: #111827; }
 
 .history-label {
   font-size: 10px; font-weight: 700;

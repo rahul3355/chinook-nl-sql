@@ -6,28 +6,10 @@
     "answer": "There are 59 customers in total."
   },
   {
-    "timestamp": "2026-04-03T02:48:54",
-    "question": "How many customers have a missing fax number?",
-    "sql": "SELECT COUNT(CustomerId)\nFROM Customer\nWHERE Fax IS NULL;",
-    "answer": "There are **47** customers with a missing fax number."
-  },
-  {
-    "timestamp": "2026-04-03T02:52:01",
-    "question": "Which customers are from Prague?",
-    "sql": "SELECT * FROM Customer WHERE City = 'Prague';",
-    "answer": "There are two customers from Prague. František Wichterlová is with JetBrains s.r.o. and located at Klanova 9/506. Helena Holý has no company listed and resides at Rilská 3174/6."
-  },
-  {
     "timestamp": "2026-04-03T03:00:04",
     "question": "Who is the first customer alphabetically by last name?",
     "sql": "SELECT FirstName, LastName FROM Customer ORDER BY LastName ASC LIMIT 1",
     "answer": "The first customer alphabetically by last name is Roberto Almeida."
-  },
-  {
-    "timestamp": "2026-04-03T03:04:26",
-    "question": "List customer names and emails from Canada",
-    "sql": "SELECT FirstName, LastName, Email FROM Customer WHERE Country = 'Canada'",
-    "answer": "The customers from Canada and their email addresses are Francois Tremblay (ftremblay@gmail.com), Mark Philips (mphilips12@shaw.ca), Jennifer Peterson (jenniferp@rogers.ca), Robert Brown (robbrown@shaw.ca), Edward Francis (edfrancis@yachoo.ca), Martha Silk (marthasilk@gmail.com), Aaron Mitchell (aaronmitchell@yahoo.ca), and Ellie Sullivan (ellie.sullivan@shaw.ca)."
   },
   {
     "timestamp": "2026-04-03T03:08:06",
@@ -52,5 +34,23 @@
     "question": "How many customers have a missing state?",
     "sql": "SELECT COUNT(*) FROM Customer WHERE State IS NULL",
     "answer": "There are 29 customers with a missing state."
+  },
+  {
+    "timestamp": "2026-04-03T09:20:52",
+    "question": "How many customers have a company listed?",
+    "sql": "SELECT COUNT(*) FROM Customer WHERE Company IS NOT NULL",
+    "answer": "There are 10 customers with a company listed."
+  },
+  {
+    "timestamp": "2026-04-03T09:21:49",
+    "question": "How many customers are assigned to each support rep?",
+    "sql": "SELECT SupportRepId, COUNT(*) AS CustomerCount FROM Customer GROUP BY SupportRepId",
+    "answer": "Three support reps have assigned customers as follows:\nSupport Rep ID 3: 21 customers\nSupport Rep ID 4: 20 customers\nSupport Rep ID 5: 18 customers"
+  },
+  {
+    "timestamp": "2026-04-03T09:23:39",
+    "question": "List customer names and emails from Canada",
+    "sql": "SELECT FirstName, LastName, Email FROM Customer WHERE Country = 'Canada'",
+    "answer": "There are 8 customers from Canada:\nFrançois Tremblay (ftremblay@gmail.com)\nMark Philips (mphilips12@shaw.ca)\nJennifer Peterson (jenniferp@rogers.ca)\nRobert Brown (robbrown@shaw.ca)\nEdward Francis (edfrancis@yachoo.ca)\nMartha Silk (marthasilk@gmail.com)\nAaron Mitchell (aaronmitchell@yahoo.ca)\nEllie Sullivan (ellie.sullivan@shaw.ca)"
   }
 ]
