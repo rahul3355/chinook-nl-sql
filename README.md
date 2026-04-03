@@ -1,19 +1,19 @@
-# Chinook NL-SQL — Natural Language to SQL Query App
+# Olist E-commerce NL-SQL — Business Intelligence Assistant
 
-A lightweight Python + FastAPI app that lets you ask plain English questions about a SQLite database and get plain English answers back. Built on the Chinook sample database, querying only the `Customer` table.
+A powerful Python + FastAPI app that lets you ask complex business questions about the Olist Brazilian E-commerce dataset in plain English. Built with Vanna AI for robust multi-table SQL generation.
 
-**Stack:** Python · FastAPI · SQLite · OpenRouter API · Vanilla HTML/CSS/JS
+**Stack:** Python · FastAPI · SQLite · Vanna AI · OpenRouter · Vanilla HTML/CSS/JS
 
 ---
 
 ## Live Demo
 
-Ask questions like:
-- *How many customers are there?*
-- *Which country has the most customers?*
-- *List all customers from Germany*
-- *Which customers have a phone number but no fax?*
-- *How many customers are assigned to each support rep?*
+Ask complex questions like:
+- *What is the total revenue per product category?*
+- *Which state has the highest revenue?*
+- *Show the top 5 product categories by revenue in English.*
+- *What is the average delivery time in days?*
+- *Which payment method is most popular?*
 
 The app converts your question to SQL, executes it safely, and returns a plain English answer.
 
@@ -82,7 +82,7 @@ Open **http://localhost:8000** in your browser.
 ```
 chinook-nl-sql/
 ├── data/
-│   └── Chinook.sqlite          # SQLite database
+│   └── olist.sqlite            # Brazilian E-commerce database (11 tables)
 ├── prompts/
 │   ├── schema.txt              # Customer table schema fed to LLM
 │   ├── sql_system_prompt.txt   # Instructions for SQL generation
@@ -97,7 +97,8 @@ chinook-nl-sql/
 │   ├── config.py               # Env vars and constants
 │   ├── db.py                   # SQLite connection and queries
 │   ├── llm.py                  # OpenRouter API wrapper
-│   ├── sql_generator.py        # NL → SQL via LLM
+│   ├── vanna_logic.py          # Custom Vanna AI engine (Direct Schema)
+│   ├── sql_generator.py        # NL → SQL via Vanna
 │   ├── answer_generator.py     # Results → English via LLM
 │   ├── safety.py               # Blocks unsafe SQL (only SELECT/WITH allowed)
 │   ├── history_manager.py      # Save/load/delete query history
@@ -122,14 +123,14 @@ chinook-nl-sql/
 
 ```json
 // Request
-{ "question": "How many customers are there?" }
+{ "question": "What is the total revenue?" }
 
 // Response
 {
-  "answer": "There are 59 customers in total.",
-  "sql": "SELECT COUNT(*) FROM Customer",
+  "answer": "The total revenue across all orders is R$ 13,591,643.70.",
+  "sql": "SELECT SUM(price) FROM order_items",
   "row_count": 1,
-  "timestamp": "2026-04-03T09:15:00"
+  "timestamp": "2026-04-03T12:30:00"
 }
 ```
 
@@ -141,7 +142,10 @@ chinook-nl-sql/
 User question
     │
     ▼
-generate_sql()  →  LLM Call #1  →  SQL query
+vanna_logic.py (Direct Schema RAG)
+    │
+    ▼
+generate_sql()  →  LLM Call (Grok)  →  SQL query
     │
     ▼
 safety check    →  block if not SELECT/WITH

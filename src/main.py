@@ -64,7 +64,7 @@ def run_once(question: str) -> None:
 
 def main() -> None:
     print("=" * 60)
-    print("  Chinook Customers NL-SQL Query App")
+    print("  Olist E-commerce NL-SQL Query App")
     print("  Type your question, or 'quit' / 'exit' to stop.")
     print("=" * 60)
 

@@ -40,6 +40,7 @@ function resetInputHeight() {
   questionInput.style.height = 'auto';
 }
 
+
 // ─── History Sidebar ──────────────────────────────────────
 async function fetchHistory() {
   try {
@@ -91,10 +92,10 @@ function loadHistoryEntry(idx) {
   newSession();                                         // clear current chat
   hideEmptyState();
   appendUserMessage(item.question);
-  appendHistoryAnswer(item.answer, item.sql, item.timestamp);
+  appendHistoryAnswer(item.question, item.answer, item.sql, item.row_count, item.timestamp);
 }
 
-function appendHistoryAnswer(answer, sql, timestamp) {
+function appendHistoryAnswer(question, answer, sql, rowCount, timestamp) {
   const div = document.createElement('div');
   div.className = 'message assistant-message';
   const uid = 'dp' + Date.now();
@@ -118,13 +119,37 @@ function appendHistoryAnswer(answer, sql, timestamp) {
             <code class="detail-code">${escapeHtml(sql)}</code>
           </div>
           <div class="detail-row">
+            <span class="detail-label">Rows Returned</span>
+            <span class="detail-value">${rowCount || 'N/A'}</span>
+          </div>
+          <div class="detail-row">
             <span class="detail-label">Timestamp</span>
             <span class="detail-value">${formatTs(timestamp)}</span>
           </div>
         </div>
       </div>
+      ${(rowCount > 1 || !rowCount) ? `
+      <div class="suggested-actions">
+        <button class="action-btn" onclick="generateChart('${escapeHtml(question)}', '${escapeHtml(sql.replace(/'/g, "\\'"))}', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+          </svg>
+          Generate Chart
+        </button>
+      </div>` : ''}
     </div>`;
   messagesEl.appendChild(div);
+  
+  // Attach chart listener if button exists
+  const btn = div.querySelector('.chart-trigger-btn');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const q = btn.getAttribute('data-question');
+      const s = btn.getAttribute('data-sql');
+      generateChart(q, s, btn);
+    });
+  }
+  
   scrollToBottom();
 }
 
@@ -206,7 +231,7 @@ function stopLoadingAnim() {
 }
 
 // ─── Assistant Answer ─────────────────────────────────────
-function resolveLoadingBubble(answer, sql, rowCount, timestamp) {
+function resolveLoadingBubble(question, answer, sql, rowCount, timestamp) {
   stopLoadingAnim();
   const msg = document.getElementById('loading-msg');
   if (!msg) return;
@@ -243,8 +268,96 @@ function resolveLoadingBubble(answer, sql, rowCount, timestamp) {
           </div>
         </div>
       </div>
+      ${(rowCount > 1 || !rowCount) ? `
+      <div class="suggested-actions">
+        <button class="action-btn chart-trigger-btn" 
+                data-question="${escapeHtml(question)}" 
+                data-sql="${escapeHtml(sql)}">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+          </svg>
+          Generate Chart
+        </button>
+      </div>` : ''}
     </div>`;
+
+  // Attach chart listener
+  const btn = msg.querySelector('.chart-trigger-btn');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const q = btn.getAttribute('data-question');
+      const s = btn.getAttribute('data-sql');
+      generateChart(q, s, btn);
+    });
+  }
+
   scrollToBottom();
+}
+
+async function generateChart(question, sql, btn) {
+  if (!window.Plotly) {
+    alert("Plotly library not loaded.");
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.innerHTML = `
+    <div class="thinking-spinner" style="width:12px; height:12px; border-width:2px"></div>
+    Generating...
+  `;
+  
+  try {
+    const res = await fetch('/generate_chart', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question, sql })
+    });
+    
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.detail || "Chart generation failed");
+    }
+    
+    const data = await res.json();
+    const figure = JSON.parse(data.chart_json);
+    
+    // Create chart container
+    const chartDiv = document.createElement('div');
+    chartDiv.className = 'chart-container';
+    const chartId = 'chart-' + Date.now();
+    chartDiv.id = chartId;
+    
+    // Append to the same assistant message body and expand bubble
+    const body = btn.parentElement.parentElement;
+    const message = body.closest('.message');
+    body.classList.add('has-chart');
+    if (message) {
+      message.classList.add('expanded-chart');
+    }
+    body.appendChild(chartDiv);
+    
+    // Render Plotly
+    Plotly.newPlot(chartId, figure.data, figure.layout, {
+      responsive: true,
+      displayModeBar: false
+    });
+    
+    // Hide the button after use and scroll
+    btn.parentElement.style.display = 'none';
+    
+    // Smooth scroll again after Plotly layout is fully settled
+    setTimeout(scrollToBottom, 300);
+  } catch (err) {
+    console.error("Chart Error:", err);
+    btn.disabled = false;
+    btn.classList.add('error');
+    btn.innerHTML = `
+      <svg class="btn-icon" style="color:#ef4444" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      Failed. Try again?
+    `;
+  }
 }
 
 function resolveError(text) {
@@ -301,7 +414,7 @@ async function sendMessage() {
       throw new Error(e.detail || `Server error ${res.status}`);
     }
     const data = await res.json();
-    resolveLoadingBubble(data.answer, data.sql, data.row_count, data.timestamp);
+    resolveLoadingBubble(question, data.answer, data.sql, data.row_count, data.timestamp);
     fetchHistory();
   } catch (err) {
     resolveError(err.message || 'Something went wrong. Please try again.');
@@ -327,3 +440,14 @@ questionInput.addEventListener('input', () => {
 
 // ─── Init ─────────────────────────────────────────────────
 fetchHistory();
+
+// Handle responsive resizing for Plotly charts
+window.addEventListener('resize', () => {
+    if (typeof Plotly === 'undefined') return;
+    const charts = document.querySelectorAll('.chart-container');
+    charts.forEach(el => {
+        if (el.id) {
+            Plotly.Plots.resize(el);
+        }
+    });
+});

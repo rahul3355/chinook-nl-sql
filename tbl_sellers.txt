@@ -1,0 +1,18 @@
+### TABLE: sellers
+COLUMNS:
+       seller_id (TEXT)
+       seller_zip_code_prefix (INTEGER)
+       seller_city (TEXT)
+       seller_state (TEXT)
+ROWS: 3,095
+COLUMNS: ['seller_id', 'seller_zip_code_prefix', 'seller_city', 'seller_state']
+  row1: ('3442f8959a84dea7ee197c632cb2df15', '13023', 'campinas', 'SP')
+  row2: ('d1b65fc7debc3361ea86b5f14c68d2e2', '13844', 'mogi guacu', 'SP')
+  row3: ('ce3ad9de960102d0677a81f5d0bb7b2d', '20031', 'rio de janeiro', 'RJ')
+  row4: ('c0f3eea2e14555b6faeea3dd58c1b1c3', '4195', 'sao paulo', 'SP')
+  row5: ('51a04a8a6bdcb23deccc82b0b80742cf', '12914', 'braganca paulista', 'SP')
+  row6: ('c240c4061717ac1806ae6ee72be3533b', '20920', 'rio de janeiro', 'RJ')
+  row7: ('e49c26c3edfa46d227d5121a6b6e4d37', '55325', 'brejao', 'PE')
+  row8: ('1b938a7ec6ac5061a66a3766e0e75f90', '16304', 'penapolis', 'SP')
+  row9: ('768a86e36ad6aae3d03ee3c6433d61df', '1529', 'sao paulo', 'SP')
+  row10: ('ccc4bbb5f32a6ab2b7066a4130f114e3', '80310', 'curitiba', 'PR')

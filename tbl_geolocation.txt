@@ -1,0 +1,19 @@
+### TABLE: geolocation
+COLUMNS:
+       geolocation_zip_code_prefix (INTEGER)
+       geolocation_lat (REAL)
+       geolocation_lng (REAL)
+       geolocation_city (TEXT)
+       geolocation_state (TEXT)
+ROWS: 1,000,163
+COLUMNS: ['geolocation_zip_code_prefix', 'geolocation_lat', 'geolocation_lng', 'geolocation_city', 'geolocation_state']
+  row1: ('1037', '-23.54562128115268', '-46.63929204800168', 'sao paulo', 'SP')
+  row2: ('1046', '-23.54608112703553', '-46.64482029837157', 'sao paulo', 'SP')
+  row3: ('1046', '-23.54612896641469', '-46.64295148361138', 'sao paulo', 'SP')
+  row4: ('1041', '-23.5443921648681', '-46.63949930627844', 'sao paulo', 'SP')
+  row5: ('1035', '-23.541577961711493', '-46.64160722329613', 'sao paulo', 'SP')
+  row6: ('1012', '-23.547762303364262', '-46.63536053788448', 'são paulo', 'SP')
+  row7: ('1047', '-23.54627311241268', '-46.64122516971552', 'sao paulo', 'SP')
+  row8: ('1013', '-23.546923208436723', '-46.6342636964915', 'sao paulo', 'SP')
+  row9: ('1029', '-23.543769055769133', '-46.63427784085132', 'sao paulo', 'SP')
+  row10: ('1011', '-23.547639550320632', '-46.63603162315495', 'sao paulo', 'SP')

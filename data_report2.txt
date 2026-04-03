@@ -1,0 +1,246 @@
+
+### TABLE: customers
+COLUMNS:
+       customer_id (TEXT)
+       customer_unique_id (TEXT)
+       customer_zip_code_prefix (INTEGER)
+       customer_city (TEXT)
+       customer_state (TEXT)
+ROWS: 99,441
+SAMPLE DATA (10 rows):
+  COLUMNS: ['customer_id', 'customer_unique_id', 'customer_zip_code_prefix', 'customer_city', 'customer_state']
+  [1] ('06b8999e2fba1a1fbc88172c00ba8bc7', '861eff4711a542e4b93843c6dd7febb0', 14409, 'franca', 'SP')
+  [2] ('18955e83d337fd6b2def6b18a428ac77', '290c77bc529b7ac935b93aa66c333dc3', 9790, 'sao bernardo do campo', 'SP')
+  [3] ('4e7b3e00288586ebd08712fdd0374a03', '060e732b5b29e8181a18229c7b0b2b5e', 1151, 'sao paulo', 'SP')
+  [4] ('b2b6027bc5c5109e529d4dc6358b12c3', '259dac757896d24d7702b9acbbff3f3c', 8775, 'mogi das cruzes', 'SP')
+  [5] ('4f2d8ab171c80ec8364f7c12e35b23ad', '345ecd01c38d18a9036ed96c73b8d066', 13056, 'campinas', 'SP')
+  [6] ('879864dab9bc3047522c92c82e1212b8', '4c93744516667ad3b8f1fb645a3116a4', 89254, 'jaragua do sul', 'SC')
+  [7] ('fd826e7cf63160e536e0908c76c3f441', 'addec96d2e059c80c30fe6871d30d177', 4534, 'sao paulo', 'SP')
+  [8] ('5e274e7a0c3809e14aba7ad5aae0d407', '57b2a98a409812fe9618067b6b8ebe4f', 35182, 'timoteo', 'MG')
+  [9] ('5adf08e34b2e993982a47070956c5c65', '1175e95fb47ddff9de6b2b06188f7e0d', 81560, 'curitiba', 'PR')
+  [10] ('4b7139f34592b3a31687243a302fa75b', '9afe194fb833f79e300e37e580171f22', 30575, 'belo horizonte', 'MG')
+
+### TABLE: geolocation
+COLUMNS:
+       geolocation_zip_code_prefix (INTEGER)
+       geolocation_lat (REAL)
+       geolocation_lng (REAL)
+       geolocation_city (TEXT)
+       geolocation_state (TEXT)
+ROWS: 1,000,163
+SAMPLE DATA (10 rows):
+  COLUMNS: ['geolocation_zip_code_prefix', 'geolocation_lat', 'geolocation_lng', 'geolocation_city', 'geolocation_state']
+  [1] (1037, -23.54562128115268, -46.63929204800168, 'sao paulo', 'SP')
+  [2] (1046, -23.54608112703553, -46.64482029837157, 'sao paulo', 'SP')
+  [3] (1046, -23.54612896641469, -46.64295148361138, 'sao paulo', 'SP')
+  [4] (1041, -23.5443921648681, -46.63949930627844, 'sao paulo', 'SP')
+  [5] (1035, -23.541577961711493, -46.64160722329613, 'sao paulo', 'SP')
+  [6] (1012, -23.547762303364262, -46.63536053788448, 'são paulo', 'SP')
+  [7] (1047, -23.54627311241268, -46.64122516971552, 'sao paulo', 'SP')
+  [8] (1013, -23.546923208436723, -46.6342636964915, 'sao paulo', 'SP')
+  [9] (1029, -23.543769055769133, -46.63427784085132, 'sao paulo', 'SP')
+  [10] (1011, -23.547639550320632, -46.63603162315495, 'sao paulo', 'SP')
+
+### TABLE: leads_closed
+COLUMNS:
+       mql_id (TEXT)
+       seller_id (TEXT)
+       sdr_id (TEXT)
+       sr_id (TEXT)
+       won_date (TEXT)
+       business_segment (TEXT)
+       lead_type (TEXT)
+       lead_behaviour_profile (TEXT)
+       has_company (INTEGER)
+       has_gtin (INTEGER)
+       average_stock (TEXT)
+       business_type (TEXT)
+       declared_product_catalog_size (REAL)
+       declared_monthly_revenue (REAL)
+ROWS: 842
+SAMPLE DATA (10 rows):
+  COLUMNS: ['mql_id', 'seller_id', 'sdr_id', 'sr_id', 'won_date', 'business_segment', 'lead_type', 'lead_behaviour_profile', 'has_company', 'has_gtin', 'average_stock', 'business_type', 'declared_product_catalog_size', 'declared_monthly_revenue']
+  [1] ('5420aad7fec3549a85876ba1c529bd84', '2c43fb513632d29b3b58df74816f1b06', 'a8387c01a09e99ce014107505b92388c', '4ef15afb4b2723d8f3d81e51ec7afefe', '2018-02-26 19:58:54', 'pet', 'online_medium', 'cat', None, None, None, 'reseller', None, 0.0)
+  [2] ('a555fb36b9368110ede0f043dfc3b9a0', 'bbb7d7893a450660432ea6652310ebb7', '09285259593c61296eef10c734121d5b', 'd3d1e91a157ea7f90548eef82f1955e3', '2018-05-08 20:17:59', 'car_accessories', 'industry', 'eagle', None, None, None, 'reseller', None, 0.0)
+  [3] ('327174d3648a2d047e8940d7d15204ca', '612170e34b97004b3ba37eae81836b4c', 'b90f87164b5f8c2cfa5c8572834dbe3f', '6565aa9ce3178a5caf6171827af3a9ba', '2018-06-05 17:27:23', 'home_appliances', 'online_big', 'cat', None, None, None, 'reseller', None, 0.0)
+  [4] ('f5fee8f7da74f4887f5bcae2bafb6dd6', '21e1781e36faf92725dde4730a88ca0f', '56bf83c4bb35763a51c2baab501b4c67', 'd3d1e91a157ea7f90548eef82f1955e3', '2018-01-17 13:51:03', 'food_drink', 'online_small', None, None, None, None, 'reseller', None, 0.0)
+  [5] ('ffe640179b554e295c167a2f6be528e0', 'ed8cb7b190ceb6067227478e48cf8dde', '4b339f9567d060bcea4f5136b9f5949e', 'd3d1e91a157ea7f90548eef82f1955e3', '2018-07-03 20:17:45', 'home_appliances', 'industry', 'wolf', None, None, None, 'manufacturer', None, 0.0)
+  [6] ('b94fba7670eeb44dce2a0d8eb790e9f5', '1c742ac33582852aaf3bcfbf5893abcf', 'fdb16d3cbbeb5798f2f66c4096be026d', '495d4e95a8cf8bbf8b432b612a2aa328', '2018-02-07 18:04:05', 'health_beauty', 'online_medium', None, None, None, None, 'manufacturer', None, 0.0)
+  [7] ('c3e30ed7ac989117c7e1e719b4ac128f', '92d7568ad0c5c76fd7d341b2d46f24d6', '4b339f9567d060bcea4f5136b9f5949e', '85fc447d336637ba1df43e793199fbc8', '2018-04-16 18:18:22', 'computers', 'online_medium', 'wolf', None, None, None, 'reseller', None, 0.0)
+  [8] ('b02c89251106e1fdd9d92744be9f94f2', '44ed138eca6214d572ce1d813fb0049b', '34d40cdaf94010a1d05b0d6212f9e909', '4ef15afb4b2723d8f3d81e51ec7afefe', '2018-04-17 17:01:57', 'health_beauty', 'offline', 'cat', None, None, None, 'manufacturer', None, 0.0)
+  [9] ('a90a37898cc5f2718385a2fb981caaff', '0b28859cd04d23edefee9c591fb03cd8', 'f42a2bd194f7802ab052a815c8de65b7', '6565aa9ce3178a5caf6171827af3a9ba', '2018-05-14 18:37:15', 'household_utilities', 'offline', 'eagle', None, None, None, 'reseller', None, 0.0)
+  [10] ('0173e8d8b1d94a355b440fb67388f532', '87d73636a3acf123e842bb890a4db036', '9d12ef1a7eca3ec58c545c678af7869c', '9e4d1098a3b0f5da39b0bc48f9876645', '2018-04-24 03:00:00', 'household_utilities', 'online_medium', 'eagle', None, None, None, 'manufacturer', None, 0.0)
+
+### TABLE: leads_qualified
+COLUMNS:
+       mql_id (TEXT)
+       first_contact_date (TEXT)
+       landing_page_id (TEXT)
+       origin (TEXT)
+ROWS: 8,000
+SAMPLE DATA (10 rows):
+  COLUMNS: ['mql_id', 'first_contact_date', 'landing_page_id', 'origin']
+  [1] ('dac32acd4db4c29c230538b72f8dd87d', '2018-02-01', '88740e65d5d6b056e0cda098e1ea6313', 'social')
+  [2] ('8c18d1de7f67e60dbd64e3c07d7e9d5d', '2017-10-20', '007f9098284a86ee80ddeb25d53e0af8', 'paid_search')
+  [3] ('b4bc852d233dfefc5131f593b538befa', '2018-03-22', 'a7982125ff7aa3b2054c6e44f9d28522', 'organic_search')
+  [4] ('6be030b81c75970747525b843c1ef4f8', '2018-01-22', 'd45d558f0daeecf3cccdffe3c59684aa', 'email')
+  [5] ('5420aad7fec3549a85876ba1c529bd84', '2018-02-21', 'b48ec5f3b04e9068441002a19df93c6c', 'organic_search')
+  [6] ('28bdfd5f057764b54c38770f95c69f2f', '2018-01-14', '22c29808c4f815213303f8933030604c', 'organic_search')
+  [7] ('126a0d10becbaafcb2e72ce6848cf32c', '2018-05-15', '6a110e795dd487f1cf8d7583671987af', 'email')
+  [8] ('f76136f54d14a3345951f25b7932366b', '2018-05-24', 'd51b0d02f063ba1d053db6d97226eec3', 'email')
+  [9] ('2f838cade4a6012a6cb1016d1d8d95ed', '2017-11-10', 'aeac92c0f5ae22a04ed3b746cce3a1b6', 'organic_search')
+  [10] ('7281942387a1a0c3f72a50a8b0bb0920', '2017-12-25', '88740e65d5d6b056e0cda098e1ea6313', 'social')
+
+### TABLE: order_items
+COLUMNS:
+       order_id (TEXT)
+       order_item_id (INTEGER)
+       product_id (TEXT)
+       seller_id (TEXT)
+       shipping_limit_date (TEXT)
+       price (REAL)
+       freight_value (REAL)
+ROWS: 112,650
+SAMPLE DATA (10 rows):
+  COLUMNS: ['order_id', 'order_item_id', 'product_id', 'seller_id', 'shipping_limit_date', 'price', 'freight_value']
+  [1] ('00010242fe8c5a6d1ba2dd792cb16214', 1, '4244733e06e7ecb4970a6e2683c13e61', '48436dade18ac8b2bce089ec2a041202', '2017-09-19 09:45:35', 58.9, 13.29)
+  [2] ('00018f77f2f0320c557190d7a144bdd3', 1, 'e5f2d52b802189ee658865ca93d83a8f', 'dd7ddc04e1b6c2c614352b383efe2d36', '2017-05-03 11:05:13', 239.9, 19.93)
+  [3] ('000229ec398224ef6ca0657da4fc703e', 1, 'c777355d18b72b67abbeef9df44fd0fd', '5b51032eddd242adc84c38acab88f23d', '2018-01-18 14:48:30', 199.0, 17.87)
+  [4] ('00024acbcdf0a6daa1e931b038114c75', 1, '7634da152a4610f1595efa32f14722fc', '9d7a1d34a5052409006425275ba1c2b4', '2018-08-15 10:10:18', 12.99, 12.79)
+  [5] ('00042b26cf59d7ce69dfabb4e55b4fd9', 1, 'ac6c3623068f30de03045865e4e10089', 'df560393f3a51e74553ab94004ba5c87', '2017-02-13 13:57:51', 199.9, 18.14)
+  [6] ('00048cc3ae777c65dbb7d2a0634bc1ea', 1, 'ef92defde845ab8450f9d70c526ef70f', '6426d21aca402a131fc0a5d0960a3c90', '2017-05-23 03:55:27', 21.9, 12.69)
+  [7] ('00054e8431b9d7675808bcb819fb4a32', 1, '8d4f2bb7e93e6710a28f34fa83ee7d28', '7040e82f899a04d1b434b795a43b4617', '2017-12-14 12:10:31', 19.9, 11.85)
+  [8] ('000576fe39319847cbb9d288c5617fa6', 1, '557d850972a7d6f792fd18ae1400d9b6', '5996cddab893a4652a15592fb58ab8db', '2018-07-10 12:30:45', 810.0, 70.75)
+  [9] ('0005a1a1728c9d785b8e2b08b904576c', 1, '310ae3c140ff94b03219ad0adc3c778f', 'a416b6a846a11724393025641d4edd5e', '2018-03-26 18:31:29', 145.95, 11.65)
+  [10] ('0005f50442cb953dcd1d21e1fb923495', 1, '4535b0e1091c278dfd193e5a1d63b39f', 'ba143b05f0110f0dc71ad71b4466ce92', '2018-07-06 14:10:56', 53.99, 11.4)
+
+### TABLE: order_payments
+COLUMNS:
+       order_id (TEXT)
+       payment_sequential (INTEGER)
+       payment_type (TEXT)
+       payment_installments (INTEGER)
+       payment_value (REAL)
+ROWS: 103,886
+SAMPLE DATA (10 rows):
+  COLUMNS: ['order_id', 'payment_sequential', 'payment_type', 'payment_installments', 'payment_value']
+  [1] ('b81ef226f3fe1789b1e8b2acac839d17', 1, 'credit_card', 8, 99.33)
+  [2] ('a9810da82917af2d9aefd1278f1dcfa0', 1, 'credit_card', 1, 24.39)
+  [3] ('25e8ea4e93396b6fa0d3dd708e76c1bd', 1, 'credit_card', 1, 65.71)
+  [4] ('ba78997921bbcdc1373bb41e913ab953', 1, 'credit_card', 8, 107.78)
+  [5] ('42fdf880ba16b47b59251dd489d4441a', 1, 'credit_card', 2, 128.45)
+  [6] ('298fcdf1f73eb413e4d26d01b25bc1cd', 1, 'credit_card', 2, 96.12)
+  [7] ('771ee386b001f06208a7419e4fc1bbd7', 1, 'credit_card', 1, 81.16)
+  [8] ('3d7239c394a212faae122962df514ac7', 1, 'credit_card', 3, 51.84)
+  [9] ('1f78449c87a54faf9e96e88ba1491fa9', 1, 'credit_card', 6, 341.09)
+  [10] ('0573b5e23cbd798006520e1d5b4c6714', 1, 'boleto', 1, 51.95)
+
+### TABLE: order_reviews
+COLUMNS:
+       review_id (TEXT)
+       order_id (TEXT)
+       review_score (INTEGER)
+       review_comment_title (TEXT)
+       review_comment_message (TEXT)
+       review_creation_date (TEXT)
+       review_answer_timestamp (TEXT)
+ROWS: 99,224
+SAMPLE DATA (10 rows):
+  COLUMNS: ['review_id', 'order_id', 'review_score', 'review_comment_title', 'review_comment_message', 'review_creation_date', 'review_answer_timestamp']
+  [1] ('7bc2406110b926393aa56f80a40eba40', '73fc7af87114b39712e6da79b0a377eb', 4, None, None, '2018-01-18 00:00:00', '2018-01-18 21:46:59')
+  [2] ('80e641a11e56f04c1ad469d5645fdfde', 'a548910a1c6147796b98fdf73dbeba33', 5, None, None, '2018-03-10 00:00:00', '2018-03-11 03:05:13')
+  [3] ('228ce5500dc1d8e020d8d1322874b6f0', 'f9e4b658b201a9f2ecdecbb34bed034b', 5, None, None, '2018-02-17 00:00:00', '2018-02-18 14:36:24')
+  [4] ('e64fb393e7b32834bb789ff8bb30750e', '658677c97b385a9be170737859d3511b', 5, None, 'Recebi bem antes do prazo estipulado.', '2017-04-21 00:00:00', '2017-04-21 22:02:06')
+  [5] ('f7c4243c7fe1938f181bec41a392bdeb', '8e6bfb81e283fa7e4f11123a3fb894f1', 5, None, 'Parabéns lojas lannister adorei comprar pela Internet seguro e prático Parabéns a todos feliz Páscoa', '2018-03-01 00:00:00', '2018-03-02 10:26:53')
+  [6] ('15197aa66ff4d0650b5434f1b46cda19', 'b18dcdf73be66366873cd26c5724d1dc', 1, None, None, '2018-04-13 00:00:00', '2018-04-16 00:39:37')
+  [7] ('07f9bee5d1b850860defd761afa7ff16', 'e48aa0d2dcec3a2e87348811bcfdf22b', 5, None, None, '2017-07-16 00:00:00', '2017-07-18 19:30:34')
+  [8] ('7c6400515c67679fbee952a7525281ef', 'c31a859e34e3adac22f376954e19b39d', 5, None, None, '2018-08-14 00:00:00', '2018-08-14 21:36:06')
+  [9] ('a3f6f7f6f433de0aefbb97da197c554c', '9c214ac970e84273583ab523dfafd09b', 5, None, None, '2017-05-17 00:00:00', '2017-05-18 12:05:37')
+  [10] ('8670d52e15e00043ae7de4c01cc2fe06', 'b9bf720beb4ab3728760088589c62129', 4, 'recomendo', 'aparelho eficiente. no site a marca do aparelho esta impresso como 3desinfector e ao chegar esta com outro nome...atualizar com a marca correta uma vez que é o mesmo aparelho', '2018-05-22 00:00:00', '2018-05-23 16:45:47')
+
+### TABLE: orders
+COLUMNS:
+       order_id (TEXT)
+       customer_id (TEXT)
+       order_status (TEXT)
+       order_purchase_timestamp (TEXT)
+       order_approved_at (TEXT)
+       order_delivered_carrier_date (TEXT)
+       order_delivered_customer_date (TEXT)
+       order_estimated_delivery_date (TEXT)
+ROWS: 99,441
+SAMPLE DATA (10 rows):
+  COLUMNS: ['order_id', 'customer_id', 'order_status', 'order_purchase_timestamp', 'order_approved_at', 'order_delivered_carrier_date', 'order_delivered_customer_date', 'order_estimated_delivery_date']
+  [1] ('e481f51cbdc54678b7cc49136f2d6af7', '9ef432eb6251297304e76186b10a928d', 'delivered', '2017-10-02 10:56:33', '2017-10-02 11:07:15', '2017-10-04 19:55:00', '2017-10-10 21:25:13', '2017-10-18 00:00:00')
+  [2] ('53cdb2fc8bc7dce0b6741e2150273451', 'b0830fb4747a6c6d20dea0b8c802d7ef', 'delivered', '2018-07-24 20:41:37', '2018-07-26 03:24:27', '2018-07-26 14:31:00', '2018-08-07 15:27:45', '2018-08-13 00:00:00')
+  [3] ('47770eb9100c2d0c44946d9cf07ec65d', '41ce2a54c0b03bf3443c3d931a367089', 'delivered', '2018-08-08 08:38:49', '2018-08-08 08:55:23', '2018-08-08 13:50:00', '2018-08-17 18:06:29', '2018-09-04 00:00:00')
+  [4] ('949d5b44dbf5de918fe9c16f97b45f8a', 'f88197465ea7920adcdbec7375364d82', 'delivered', '2017-11-18 19:28:06', '2017-11-18 19:45:59', '2017-11-22 13:39:59', '2017-12-02 00:28:42', '2017-12-15 00:00:00')
+  [5] ('ad21c59c0840e6cb83a9ceb5573f8159', '8ab97904e6daea8866dbdbc4fb7aad2c', 'delivered', '2018-02-13 21:18:39', '2018-02-13 22:20:29', '2018-02-14 19:46:34', '2018-02-16 18:17:02', '2018-02-26 00:00:00')
+  [6] ('a4591c265e18cb1dcee52889e2d8acc3', '503740e9ca751ccdda7ba28e9ab8f608', 'delivered', '2017-07-09 21:57:05', '2017-07-09 22:10:13', '2017-07-11 14:58:04', '2017-07-26 10:57:55', '2017-08-01 00:00:00')
+  [7] ('136cce7faa42fdb2cefd53fdc79a6098', 'ed0271e0b7da060a393796590e7b737a', 'invoiced', '2017-04-11 12:22:08', '2017-04-13 13:25:17', None, None, '2017-05-09 00:00:00')
+  [8] ('6514b8ad8028c9f2cc2374ded245783f', '9bdf08b4b3b52b5526ff42d37d47f222', 'delivered', '2017-05-16 13:10:30', '2017-05-16 13:22:11', '2017-05-22 10:07:46', '2017-05-26 12:55:51', '2017-06-07 00:00:00')
+  [9] ('76c6e866289321a7c93b82b54852dc33', 'f54a9f0e6b351c431402b8461ea51999', 'delivered', '2017-01-23 18:29:09', '2017-01-25 02:50:47', '2017-01-26 14:16:31', '2017-02-02 14:08:10', '2017-03-06 00:00:00')
+  [10] ('e69bfb5eb88e0ed6a785585b27e16dbf', '31ad1d1b63eb9962463f764d4e6e0c9d', 'delivered', '2017-07-29 11:55:02', '2017-07-29 12:05:32', '2017-08-10 19:45:24', '2017-08-16 17:14:30', '2017-08-23 00:00:00')
+
+### TABLE: product_category_name_translation
+COLUMNS:
+       product_category_name (TEXT)
+       product_category_name_english (TEXT)
+ROWS: 71
+SAMPLE DATA (10 rows):
+  COLUMNS: ['product_category_name', 'product_category_name_english']
+  [1] ('beleza_saude', 'health_beauty')
+  [2] ('informatica_acessorios', 'computers_accessories')
+  [3] ('automotivo', 'auto')
+  [4] ('cama_mesa_banho', 'bed_bath_table')
+  [5] ('moveis_decoracao', 'furniture_decor')
+  [6] ('esporte_lazer', 'sports_leisure')
+  [7] ('perfumaria', 'perfumery')
+  [8] ('utilidades_domesticas', 'housewares')
+  [9] ('telefonia', 'telephony')
+  [10] ('relogios_presentes', 'watches_gifts')
+
+### TABLE: products
+COLUMNS:
+       product_id (TEXT)
+       product_category_name (TEXT)
+       product_name_lenght (REAL)
+       product_description_lenght (REAL)
+       product_photos_qty (REAL)
+       product_weight_g (REAL)
+       product_length_cm (REAL)
+       product_height_cm (REAL)
+       product_width_cm (REAL)
+ROWS: 32,951
+SAMPLE DATA (10 rows):
+  COLUMNS: ['product_id', 'product_category_name', 'product_name_lenght', 'product_description_lenght', 'product_photos_qty', 'product_weight_g', 'product_length_cm', 'product_height_cm', 'product_width_cm']
+  [1] ('1e9e8ef04dbcff4541ed26657ea517e5', 'perfumaria', 40.0, 287.0, 1.0, 225.0, 16.0, 10.0, 14.0)
+  [2] ('3aa071139cb16b67ca9e5dea641aaa2f', 'artes', 44.0, 276.0, 1.0, 1000.0, 30.0, 18.0, 20.0)
+  [3] ('96bd76ec8810374ed1b65e291975717f', 'esporte_lazer', 46.0, 250.0, 1.0, 154.0, 18.0, 9.0, 15.0)
+  [4] ('cef67bcfe19066a932b7673e239eb23d', 'bebes', 27.0, 261.0, 1.0, 371.0, 26.0, 4.0, 26.0)
+  [5] ('9dc1a7de274444849c219cff195d0b71', 'utilidades_domesticas', 37.0, 402.0, 4.0, 625.0, 20.0, 17.0, 13.0)
+  [6] ('41d3672d4792049fa1779bb35283ed13', 'instrumentos_musicais', 60.0, 745.0, 1.0, 200.0, 38.0, 5.0, 11.0)
+  [7] ('732bd381ad09e530fe0a5f457d81becb', 'cool_stuff', 56.0, 1272.0, 4.0, 18350.0, 70.0, 24.0, 44.0)
+  [8] ('2548af3e6e77a690cf3eb6368e9ab61e', 'moveis_decoracao', 56.0, 184.0, 2.0, 900.0, 40.0, 8.0, 40.0)
+  [9] ('37cc742be07708b53a98702e77a21a02', 'eletrodomesticos', 57.0, 163.0, 1.0, 400.0, 27.0, 13.0, 17.0)
+  [10] ('8c92109888e8cdf9d66dc7e463025574', 'brinquedos', 36.0, 1156.0, 1.0, 600.0, 17.0, 10.0, 12.0)
+
+### TABLE: sellers
+COLUMNS:
+       seller_id (TEXT)
+       seller_zip_code_prefix (INTEGER)
+       seller_city (TEXT)
+       seller_state (TEXT)
+ROWS: 3,095
+SAMPLE DATA (10 rows):
+  COLUMNS: ['seller_id', 'seller_zip_code_prefix', 'seller_city', 'seller_state']
+  [1] ('3442f8959a84dea7ee197c632cb2df15', 13023, 'campinas', 'SP')
+  [2] ('d1b65fc7debc3361ea86b5f14c68d2e2', 13844, 'mogi guacu', 'SP')
+  [3] ('ce3ad9de960102d0677a81f5d0bb7b2d', 20031, 'rio de janeiro', 'RJ')
+  [4] ('c0f3eea2e14555b6faeea3dd58c1b1c3', 4195, 'sao paulo', 'SP')
+  [5] ('51a04a8a6bdcb23deccc82b0b80742cf', 12914, 'braganca paulista', 'SP')
+  [6] ('c240c4061717ac1806ae6ee72be3533b', 20920, 'rio de janeiro', 'RJ')
+  [7] ('e49c26c3edfa46d227d5121a6b6e4d37', 55325, 'brejao', 'PE')
+  [8] ('1b938a7ec6ac5061a66a3766e0e75f90', 16304, 'penapolis', 'SP')
+  [9] ('768a86e36ad6aae3d03ee3c6433d61df', 1529, 'sao paulo', 'SP')
+  [10] ('ccc4bbb5f32a6ab2b7066a4130f114e3', 80310, 'curitiba', 'PR')

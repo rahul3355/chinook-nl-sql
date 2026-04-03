@@ -1,0 +1,19 @@
+### TABLE: order_payments
+COLUMNS:
+       order_id (TEXT)
+       payment_sequential (INTEGER)
+       payment_type (TEXT)
+       payment_installments (INTEGER)
+       payment_value (REAL)
+ROWS: 103,886
+COLUMNS: ['order_id', 'payment_sequential', 'payment_type', 'payment_installments', 'payment_value']
+  row1: ('b81ef226f3fe1789b1e8b2acac839d17', '1', 'credit_card', '8', '99.33')
+  row2: ('a9810da82917af2d9aefd1278f1dcfa0', '1', 'credit_card', '1', '24.39')
+  row3: ('25e8ea4e93396b6fa0d3dd708e76c1bd', '1', 'credit_card', '1', '65.71')
+  row4: ('ba78997921bbcdc1373bb41e913ab953', '1', 'credit_card', '8', '107.78')
+  row5: ('42fdf880ba16b47b59251dd489d4441a', '1', 'credit_card', '2', '128.45')
+  row6: ('298fcdf1f73eb413e4d26d01b25bc1cd', '1', 'credit_card', '2', '96.12')
+  row7: ('771ee386b001f06208a7419e4fc1bbd7', '1', 'credit_card', '1', '81.16')
+  row8: ('3d7239c394a212faae122962df514ac7', '1', 'credit_card', '3', '51.84')
+  row9: ('1f78449c87a54faf9e96e88ba1491fa9', '1', 'credit_card', '6', '341.09')
+  row10: ('0573b5e23cbd798006520e1d5b4c6714', '1', 'boleto', '1', '51.95')

@@ -10,8 +10,8 @@ def _strip_markdown(text: str) -> str:
     text = re.sub(r'\*\*(.+?)\*\*', r'\1', text, flags=re.DOTALL)
     text = re.sub(r'__(.+?)__',     r'\1', text, flags=re.DOTALL)
     # Italic: *text* or _text_
-    text = re.sub(r'\*(.+?)\*', r'\1', text, flags=re.DOTALL)
-    text = re.sub(r'_(.+?)_',   r'\1', text, flags=re.DOTALL)
+    text = re.sub(r'(^|\s)\*(.+?)\*($|\s)', r'\1\2\3', text, flags=re.DOTALL)
+    text = re.sub(r'(^|\s)_(.+?)_($|\s)',   r'\1\2\3', text, flags=re.DOTALL)
     # Inline code: `text`
     text = re.sub(r'`(.+?)`', r'\1', text)
     return text.strip()

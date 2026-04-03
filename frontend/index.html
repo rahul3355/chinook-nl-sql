@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Customer Analytics</title>
-  <meta name="description" content="Query your Chinook customer database in plain English." />
+  <title>Olist E-commerce Analytics</title>
+  <meta name="description" content="Query your Olist e-commerce database in plain English." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
 </head>
 <body>
   <div class="app">
@@ -22,9 +23,9 @@
               <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
             </svg>
           </div>
-          <span class="brand-name">Customer Analytics</span>
+          <span class="brand-name">E-commerce Analytics</span>
         </div>
-        <p class="sidebar-desc">Ask questions about your Chinook customer database in plain English.</p>
+        <p class="sidebar-desc">Ask questions about your Olist e-commerce database in plain English.</p>
       </div>
       <div class="sidebar-bottom">
         <button class="new-chat-btn" onclick="newSession()">
@@ -51,36 +52,36 @@
           </svg>
         </button>
         <div class="sample-panel" id="sample-panel">
-          <div class="sample-group-label">Counts &amp; Totals</div>
-          <div class="sq" onclick="setQuestion(this)">How many customers are there?</div>
-          <div class="sq" onclick="setQuestion(this)">How many customers have a company listed?</div>
-          <div class="sq" onclick="setQuestion(this)">How many customers have a missing fax number?</div>
-          <div class="sq" onclick="setQuestion(this)">How many customers have a missing state?</div>
-          <div class="sq" onclick="setQuestion(this)">How many distinct countries are represented?</div>
-          <div class="sample-group-label">Filtering by Location</div>
-          <div class="sq" onclick="setQuestion(this)">Show all customers from Germany</div>
-          <div class="sq" onclick="setQuestion(this)">List all customers from Brazil</div>
-          <div class="sq" onclick="setQuestion(this)">Which customers are from the Czech Republic?</div>
-          <div class="sq" onclick="setQuestion(this)">Show all customers from the city of Paris</div>
-          <div class="sq" onclick="setQuestion(this)">Which customers are from Prague?</div>
-          <div class="sample-group-label">Rankings &amp; Aggregates</div>
-          <div class="sq" onclick="setQuestion(this)">Which country has the most customers?</div>
-          <div class="sq" onclick="setQuestion(this)">Which city has the most customers?</div>
-          <div class="sq" onclick="setQuestion(this)">Which support rep has the most customers?</div>
-          <div class="sq" onclick="setQuestion(this)">How many customers are there per country?</div>
-          <div class="sq" onclick="setQuestion(this)">How many customers are assigned to each support rep?</div>
-          <div class="sample-group-label">Specific Fields</div>
-          <div class="sq" onclick="setQuestion(this)">List all customer names and their emails</div>
-          <div class="sq" onclick="setQuestion(this)">Show all customers who work at a company</div>
-          <div class="sq" onclick="setQuestion(this)">List customer names and emails from Canada</div>
-          <div class="sq" onclick="setQuestion(this)">Show customers from the United States</div>
-          <div class="sq" onclick="setQuestion(this)">Which customers have a phone number but no fax?</div>
-          <div class="sample-group-label">Sorting &amp; Ranking</div>
-          <div class="sq" onclick="setQuestion(this)">Who is the first customer alphabetically by last name?</div>
-          <div class="sq" onclick="setQuestion(this)">List the top 5 countries by number of customers</div>
-          <div class="sq" onclick="setQuestion(this)">Show all customers sorted by country</div>
-          <div class="sq" onclick="setQuestion(this)">Which customer has the highest customer ID?</div>
-          <div class="sq" onclick="setQuestion(this)">List all customers whose last name starts with S</div>
+          <div class="sample-group-label">Orders &amp; Revenue</div>
+          <div class="sq" onclick="setQuestion(this)">How many orders are there?</div>
+          <div class="sq" onclick="setQuestion(this)">What is the total revenue?</div>
+          <div class="sq" onclick="setQuestion(this)">What is the average order value?</div>
+          <div class="sq" onclick="setQuestion(this)">How many orders were delivered?</div>
+          <div class="sq" onclick="setQuestion(this)">What is the total freight value?</div>
+          <div class="sample-group-label">Geography &amp; Categories</div>
+          <div class="sq" onclick="setQuestion(this)">Which state has the most customers?</div>
+          <div class="sq" onclick="setQuestion(this)">Total revenue by customer state</div>
+          <div class="sq" onclick="setQuestion(this)">Top 5 categories by sales revenue in English</div>
+          <div class="sq" onclick="setQuestion(this)">How many customers are from São Paulo?</div>
+          <div class="sq" onclick="setQuestion(this)">Which city has the highest revenue?</div>
+          <div class="sample-group-label">Payments &amp; Reviews</div>
+          <div class="sq" onclick="setQuestion(this)">Which payment method is most popular?</div>
+          <div class="sq" onclick="setQuestion(this)">What is the average review score?</div>
+          <div class="sq" onclick="setQuestion(this)">How many orders have a 5-star review?</div>
+          <div class="sq" onclick="setQuestion(this)">List orders with a review score of 1</div>
+          <div class="sq" onclick="setQuestion(this)">Total payments by payment type</div>
+          <div class="sample-group-label">Products &amp; Items</div>
+          <div class="sq" onclick="setQuestion(this)">How many distinct products were sold?</div>
+          <div class="sq" onclick="setQuestion(this)">Average price per product category</div>
+          <div class="sq" onclick="setQuestion(this)">Which product was sold the most?</div>
+          <div class="sq" onclick="setQuestion(this)">List items for order id ...</div>
+          <div class="sq" onclick="setQuestion(this)">How many sellers are from Paraná?</div>
+          <div class="sample-group-label">Time &amp; Performance</div>
+          <div class="sq" onclick="setQuestion(this)">What is the average delivery time in days?</div>
+          <div class="sq" onclick="setQuestion(this)">How many orders were placed in each month?</div>
+          <div class="sq" onclick="setQuestion(this)">Which day of the week has most orders?</div>
+          <div class="sq" onclick="setQuestion(this)">Percentage of orders delivered on time</div>
+          <div class="sq" onclick="setQuestion(this)">List orders estimated for delivery yesterday</div>
         </div>
       </div>
     </aside>
@@ -97,13 +98,13 @@
               <path d="M11 8v6"/><path d="M8 11h6"/>
             </svg>
           </div>
-          <h2 class="empty-title">Ask questions about your customers</h2>
-          <p class="empty-subtitle">Query your Chinook customer database in plain English</p>
+          <h2 class="empty-title">Ask questions about e-commerce</h2>
+          <p class="empty-subtitle">Query your Olist database in plain English</p>
           <div class="chips">
-            <button class="chip" onclick="setQuestion(this)">How many customers are there?</button>
-            <button class="chip" onclick="setQuestion(this)">Show all customers from Germany</button>
-            <button class="chip" onclick="setQuestion(this)">Which city has the most customers?</button>
-            <button class="chip" onclick="setQuestion(this)">List customer names and emails from Canada</button>
+            <button class="chip" onclick="setQuestion(this)">What is the total revenue?</button>
+            <button class="chip" onclick="setQuestion(this)">Top 5 categories by revenue</button>
+            <button class="chip" onclick="setQuestion(this)">Which state has most orders?</button>
+            <button class="chip" onclick="setQuestion(this)">Average delivery time in days</button>
           </div>
         </div>
 
@@ -114,7 +115,7 @@
       <!-- Input -->
       <div class="input-area">
         <div class="input-card">
-          <textarea id="question-input" class="question-input" placeholder="Ask anything about your customers…" rows="1"></textarea>
+          <textarea id="question-input" class="question-input" placeholder="Ask anything about e-commerce…" rows="1"></textarea>
           <button id="send-btn" class="send-btn" onclick="sendMessage()">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>

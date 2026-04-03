@@ -4,13 +4,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+import pandas as pd
 from src.sql_generator import generate_sql
 from src.safety import is_safe_sql
 from src.db import run_query
 from src.answer_generator import generate_answer
 from src.history_manager import save_history, load_history, delete_entry
+from src.vanna_logic import vn_engine
 
-app = FastAPI(title="Chinook NL-SQL API", version="1.0.0")
+app = FastAPI(title="Olist E-commerce NL-SQL API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -32,6 +34,15 @@ class ChatResponse(BaseModel):
     timestamp: str
 
 
+class ChartRequest(BaseModel):
+    question: str
+    sql: str
+
+
+class ChartResponse(BaseModel):
+    chart_json: str
+
+
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     question = request.question.strip()
@@ -47,7 +58,7 @@ async def chat(request: ChatRequest):
 
     if not is_safe_sql(sql):
         return ChatResponse(
-            answer="I can only answer read-only questions about customer data.",
+            answer="I can only answer read-only questions about e-commerce data.",
             sql=sql,
             row_count=0,
             timestamp=ts,
@@ -67,6 +78,33 @@ async def chat(request: ChatRequest):
     save_history(question, sql, answer)
 
     return ChatResponse(answer=answer, sql=sql, row_count=len(rows), timestamp=ts)
+
+
+@app.post("/generate_chart", response_model=ChartResponse)
+async def generate_chart(request: ChartRequest):
+    if not is_safe_sql(request.sql):
+        raise HTTPException(status_code=400, detail="Unsafe SQL")
+
+    try:
+        # Get data as DataFrame for Plotly
+        df = vn_engine.run_sql(request.sql)
+        if df.empty:
+            raise HTTPException(status_code=400, detail="No data available for charting")
+        df = vn_engine.prepare_dataframe_for_charting(df)
+
+        # Try the rule-based plotter first for single-metric result sets.
+        fig = vn_engine.get_deterministic_figure(df, title=request.question.strip())
+
+        if fig is None:
+            raise HTTPException(
+                status_code=400,
+                detail="Chart generation requires one label/time column and one numeric metric column."
+            )
+
+        return ChartResponse(chart_json=fig.to_json())
+    except Exception as e:
+        print(f"Chart Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/history")

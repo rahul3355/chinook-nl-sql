@@ -1,0 +1,21 @@
+### TABLE: order_items
+COLUMNS:
+       order_id (TEXT)
+       order_item_id (INTEGER)
+       product_id (TEXT)
+       seller_id (TEXT)
+       shipping_limit_date (TEXT)
+       price (REAL)
+       freight_value (REAL)
+ROWS: 112,650
+COLUMNS: ['order_id', 'order_item_id', 'product_id', 'seller_id', 'shipping_limit_date', 'price', 'freight_value']
+  row1: ('00010242fe8c5a6d1ba2dd792cb16214', '1', '4244733e06e7ecb4970a6e2683c13e61', '48436dade18ac8b2bce089ec2a041202', '2017-09-19 09:45:35', '58.9', '13.29')
+  row2: ('00018f77f2f0320c557190d7a144bdd3', '1', 'e5f2d52b802189ee658865ca93d83a8f', 'dd7ddc04e1b6c2c614352b383efe2d36', '2017-05-03 11:05:13', '239.9', '19.93')
+  row3: ('000229ec398224ef6ca0657da4fc703e', '1', 'c777355d18b72b67abbeef9df44fd0fd', '5b51032eddd242adc84c38acab88f23d', '2018-01-18 14:48:30', '199.0', '17.87')
+  row4: ('00024acbcdf0a6daa1e931b038114c75', '1', '7634da152a4610f1595efa32f14722fc', '9d7a1d34a5052409006425275ba1c2b4', '2018-08-15 10:10:18', '12.99', '12.79')
+  row5: ('00042b26cf59d7ce69dfabb4e55b4fd9', '1', 'ac6c3623068f30de03045865e4e10089', 'df560393f3a51e74553ab94004ba5c87', '2017-02-13 13:57:51', '199.9', '18.14')
+  row6: ('00048cc3ae777c65dbb7d2a0634bc1ea', '1', 'ef92defde845ab8450f9d70c526ef70f', '6426d21aca402a131fc0a5d0960a3c90', '2017-05-23 03:55:27', '21.9', '12.69')
+  row7: ('00054e8431b9d7675808bcb819fb4a32', '1', '8d4f2bb7e93e6710a28f34fa83ee7d28', '7040e82f899a04d1b434b795a43b4617', '2017-12-14 12:10:31', '19.9', '11.85')
+  row8: ('000576fe39319847cbb9d288c5617fa6', '1', '557d850972a7d6f792fd18ae1400d9b6', '5996cddab893a4652a15592fb58ab8db', '2018-07-10 12:30:45', '810.0', '70.75')
+  row9: ('0005a1a1728c9d785b8e2b08b904576c', '1', '310ae3c140ff94b03219ad0adc3c778f', 'a416b6a846a11724393025641d4edd5e', '2018-03-26 18:31:29', '145.95', '11.65')
+  row10: ('0005f50442cb953dcd1d21e1fb923495', '1', '4535b0e1091c278dfd193e5a1d63b39f', 'ba143b05f0110f0dc71ad71b4466ce92', '2018-07-06 14:10:56', '53.99', '11.4')

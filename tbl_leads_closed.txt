@@ -1,0 +1,28 @@
+### TABLE: leads_closed
+COLUMNS:
+       mql_id (TEXT)
+       seller_id (TEXT)
+       sdr_id (TEXT)
+       sr_id (TEXT)
+       won_date (TEXT)
+       business_segment (TEXT)
+       lead_type (TEXT)
+       lead_behaviour_profile (TEXT)
+       has_company (INTEGER)
+       has_gtin (INTEGER)
+       average_stock (TEXT)
+       business_type (TEXT)
+       declared_product_catalog_size (REAL)
+       declared_monthly_revenue (REAL)
+ROWS: 842
+COLUMNS: ['mql_id', 'seller_id', 'sdr_id', 'sr_id', 'won_date', 'business_segment', 'lead_type', 'lead_behaviour_profile', 'has_company', 'has_gtin', 'average_stock', 'business_type', 'declared_product_catalog_size', 'declared_monthly_revenue']
+  row1: ('5420aad7fec3549a85876ba1c529bd84', '2c43fb513632d29b3b58df74816f1b06', 'a8387c01a09e99ce014107505b92388c', '4ef15afb4b2723d8f3d81e51ec7afefe', '2018-02-26 19:58:54', 'pet', 'online_medium', 'cat', 'NULL', 'NULL', 'NULL', 'reseller', 'NULL', '0.0')
+  row2: ('a555fb36b9368110ede0f043dfc3b9a0', 'bbb7d7893a450660432ea6652310ebb7', '09285259593c61296eef10c734121d5b', 'd3d1e91a157ea7f90548eef82f1955e3', '2018-05-08 20:17:59', 'car_accessories', 'industry', 'eagle', 'NULL', 'NULL', 'NULL', 'reseller', 'NULL', '0.0')
+  row3: ('327174d3648a2d047e8940d7d15204ca', '612170e34b97004b3ba37eae81836b4c', 'b90f87164b5f8c2cfa5c8572834dbe3f', '6565aa9ce3178a5caf6171827af3a9ba', '2018-06-05 17:27:23', 'home_appliances', 'online_big', 'cat', 'NULL', 'NULL', 'NULL', 'reseller', 'NULL', '0.0')
+  row4: ('f5fee8f7da74f4887f5bcae2bafb6dd6', '21e1781e36faf92725dde4730a88ca0f', '56bf83c4bb35763a51c2baab501b4c67', 'd3d1e91a157ea7f90548eef82f1955e3', '2018-01-17 13:51:03', 'food_drink', 'online_small', 'NULL', 'NULL', 'NULL', 'NULL', 'reseller', 'NULL', '0.0')
+  row5: ('ffe640179b554e295c167a2f6be528e0', 'ed8cb7b190ceb6067227478e48cf8dde', '4b339f9567d060bcea4f5136b9f5949e', 'd3d1e91a157ea7f90548eef82f1955e3', '2018-07-03 20:17:45', 'home_appliances', 'industry', 'wolf', 'NULL', 'NULL', 'NULL', 'manufacturer', 'NULL', '0.0')
+  row6: ('b94fba7670eeb44dce2a0d8eb790e9f5', '1c742ac33582852aaf3bcfbf5893abcf', 'fdb16d3cbbeb5798f2f66c4096be026d', '495d4e95a8cf8bbf8b432b612a2aa328', '2018-02-07 18:04:05', 'health_beauty', 'online_medium', 'NULL', 'NULL', 'NULL', 'NULL', 'manufacturer', 'NULL', '0.0')
+  row7: ('c3e30ed7ac989117c7e1e719b4ac128f', '92d7568ad0c5c76fd7d341b2d46f24d6', '4b339f9567d060bcea4f5136b9f5949e', '85fc447d336637ba1df43e793199fbc8', '2018-04-16 18:18:22', 'computers', 'online_medium', 'wolf', 'NULL', 'NULL', 'NULL', 'reseller', 'NULL', '0.0')
+  row8: ('b02c89251106e1fdd9d92744be9f94f2', '44ed138eca6214d572ce1d813fb0049b', '34d40cdaf94010a1d05b0d6212f9e909', '4ef15afb4b2723d8f3d81e51ec7afefe', '2018-04-17 17:01:57', 'health_beauty', 'offline', 'cat', 'NULL', 'NULL', 'NULL', 'manufacturer', 'NULL', '0.0')
+  row9: ('a90a37898cc5f2718385a2fb981caaff', '0b28859cd04d23edefee9c591fb03cd8', 'f42a2bd194f7802ab052a815c8de65b7', '6565aa9ce3178a5caf6171827af3a9ba', '2018-05-14 18:37:15', 'household_utilities', 'offline', 'eagle', 'NULL', 'NULL', 'NULL', 'reseller', 'NULL', '0.0')
+  row10: ('0173e8d8b1d94a355b440fb67388f532', '87d73636a3acf123e842bb890a4db036', '9d12ef1a7eca3ec58c545c678af7869c', '9e4d1098a3b0f5da39b0bc48f9876645', '2018-04-24 03:00:00', 'household_utilities', 'online_medium', 'eagle', 'NULL', 'NULL', 'NULL', 'manufacturer', 'NULL', '0.0')

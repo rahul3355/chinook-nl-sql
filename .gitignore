@@ -12,6 +12,10 @@ build/
 # Environment — never commit your real API key
 .env
 
+# data folder
+data/
+
+
 # IDE
 .vscode/
 .idea/

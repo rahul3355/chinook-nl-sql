@@ -1,0 +1,23 @@
+### TABLE: products
+COLUMNS:
+       product_id (TEXT)
+       product_category_name (TEXT)
+       product_name_lenght (REAL)
+       product_description_lenght (REAL)
+       product_photos_qty (REAL)
+       product_weight_g (REAL)
+       product_length_cm (REAL)
+       product_height_cm (REAL)
+       product_width_cm (REAL)
+ROWS: 32,951
+COLUMNS: ['product_id', 'product_category_name', 'product_name_lenght', 'product_description_lenght', 'product_photos_qty', 'product_weight_g', 'product_length_cm', 'product_height_cm', 'product_width_cm']
+  row1: ('1e9e8ef04dbcff4541ed26657ea517e5', 'perfumaria', '40.0', '287.0', '1.0', '225.0', '16.0', '10.0', '14.0')
+  row2: ('3aa071139cb16b67ca9e5dea641aaa2f', 'artes', '44.0', '276.0', '1.0', '1000.0', '30.0', '18.0', '20.0')
+  row3: ('96bd76ec8810374ed1b65e291975717f', 'esporte_lazer', '46.0', '250.0', '1.0', '154.0', '18.0', '9.0', '15.0')
+  row4: ('cef67bcfe19066a932b7673e239eb23d', 'bebes', '27.0', '261.0', '1.0', '371.0', '26.0', '4.0', '26.0')
+  row5: ('9dc1a7de274444849c219cff195d0b71', 'utilidades_domesticas', '37.0', '402.0', '4.0', '625.0', '20.0', '17.0', '13.0')
+  row6: ('41d3672d4792049fa1779bb35283ed13', 'instrumentos_musicais', '60.0', '745.0', '1.0', '200.0', '38.0', '5.0', '11.0')
+  row7: ('732bd381ad09e530fe0a5f457d81becb', 'cool_stuff', '56.0', '1272.0', '4.0', '18350.0', '70.0', '24.0', '44.0')
+  row8: ('2548af3e6e77a690cf3eb6368e9ab61e', 'moveis_decoracao', '56.0', '184.0', '2.0', '900.0', '40.0', '8.0', '40.0')
+  row9: ('37cc742be07708b53a98702e77a21a02', 'eletrodomesticos', '57.0', '163.0', '1.0', '400.0', '27.0', '13.0', '17.0')
+  row10: ('8c92109888e8cdf9d66dc7e463025574', 'brinquedos', '36.0', '1156.0', '1.0', '600.0', '17.0', '10.0', '12.0')

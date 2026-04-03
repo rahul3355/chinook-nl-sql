@@ -52,5 +52,155 @@
     "question": "List customer names and emails from Canada",
     "sql": "SELECT FirstName, LastName, Email FROM Customer WHERE Country = 'Canada'",
     "answer": "There are 8 customers from Canada:\nFrançois Tremblay (ftremblay@gmail.com)\nMark Philips (mphilips12@shaw.ca)\nJennifer Peterson (jenniferp@rogers.ca)\nRobert Brown (robbrown@shaw.ca)\nEdward Francis (edfrancis@yachoo.ca)\nMartha Silk (marthasilk@gmail.com)\nAaron Mitchell (aaronmitchell@yahoo.ca)\nEllie Sullivan (ellie.sullivan@shaw.ca)"
+  },
+  {
+    "timestamp": "2026-04-03T12:39:19",
+    "question": "what is the total revenue",
+    "sql": "SELECT SUM(price) FROM order_items",
+    "answer": "The total revenue is 13591643.7."
+  },
+  {
+    "timestamp": "2026-04-03T12:40:04",
+    "question": "what is total revenue per product category",
+    "sql": "SELECT p.product_category_name, SUM(oi.price) AS revenue\nFROM order_items oi\nJOIN products p ON oi.product_id = p.product_id\nGROUP BY p.product_category_name\nORDER BY revenue DESC;",
+    "answer": "Here is the total revenue per product category, ordered by highest first:\nbelezasaude: 1258681.34\nrelogiospresentes: 1205005.68\ncamamesabanho: 1036988.68\nesportelazer: 988048.97\ninformaticaacessorios: 911954.32\nmoveisdecoracao: 729762.49\ncoolstuff: 635290.85\nutilidadesdomesticas: 632248.66\nautomotivo: 592720.11\nferramentasjardim: 485256.46\nbrinquedos: 483946.6\nbebes: 411764.89\nperfumaria: 399124.87\ntelefonia: 323667.53\nmoveisescritorio: 273960.7\npapelaria: 230943.23\npcs: 222963.13\npetshop: 214315.41\ninstrumentosmusicais: 191498.88\neletroportateis: 190648.58\nNone: 179535.28\neletronicos: 160246.74\nconsolesgames: 157465.22\nfashionbolsaseacessorios: 152823.54\nconstrucaoferramentasconstrucao: 144677.59\nmalasacessorios: 140429.98\neletrodomesticos2: 113317.74\ncasaconstrucao: 83088.12\neletrodomesticos: 80171.53\nagroindustriaecomercio: 72530.47\nmoveissala: 68916.56\ntelefoniafixa: 59583.0\ncasaconforto: 58572.04\nclimatizacao: 55024.96\naudio: 50688.5\nportateiscasafornoecafe: 47445.71\nlivrosinteressegeral: 46856.88\nmoveiscozinhaareadeservicojantarejardim: 46328.37\nconstrucaoferramentasiluminacao: 41080.0\nconstrucaoferramentasseguranca: 40544.52\nindustriacomercioenegocios: 39669.61\nalimentos: 29393.41\nmarketplace: 28378.47\nconstrucaoferramentasjardim: 25715.89\nartes: 24202.64\nfashioncalcados: 23562.77\nbebidas: 22428.7\nsinalizacaoeseguranca: 21509.23\nmoveisquarto: 20028.78\nlivrostecnicos: 19096.06\nconstrucaoferramentasferramentas: 15903.95\nalimentosbebidas: 15179.48\nfashionroupamasculina: 10797.82\nfashionunderwearemodapraia: 9541.55\nartigosdenatal: 8800.82\ntabletsimpressaoimagem: 7528.41\ncinefoto: 6933.46\nmusica: 6034.35\ndvdsbluray: 5999.39\nlivrosimportados: 4639.85\nartigosdefestas: 4485.18\nmoveiscolchaoeestofado: 4368.08\nportateiscozinhaepreparadoresdealimentos: 3968.53\nfashionroupafeminina: 2803.64\nfashionesporte: 2119.51\nlacuisine: 2054.99\narteseartesanato: 1814.01\nfraldashigiene: 1567.59\npcgamer: 1545.95\nflores: 1110.04\ncasaconforto2: 760.27\ncdsdvdsmusicais: 730.0\nfashionroupainfantojuvenil: 569.85\nseguroseservicos: 283.29"
+  },
+  {
+    "timestamp": "2026-04-03T12:42:20",
+    "question": "Show the top 5 product categories by revenue in English",
+    "sql": "SELECT t.product_category_name_english, SUM(oi.price) as revenue FROM order_items oi JOIN products p ON oi.product_id = p.product_id JOIN product_category_name_translation t ON p.product_category_name = t.product_category_name GROUP BY t.product_category_name_english ORDER BY revenue DESC LIMIT 5",
+    "answer": "The top 5 product categories by revenue are:\nhealthbeauty: $1,258,681.34\nwatchesgifts: $1,205,005.68\nbedbathtable: $1,036,988.68\nsportsleisure: $988,048.97\ncomputersaccessories: $911,954.32"
+  },
+  {
+    "timestamp": "2026-04-03T12:43:16",
+    "question": "Show the top 5 product categories by revenue in English",
+    "sql": "SELECT t.product_category_name_english, SUM(oi.price) as revenue\nFROM order_items oi\nJOIN products p ON oi.product_id = p.product_id\nJOIN product_category_name_translation t ON p.product_category_name = t.product_category_name\nGROUP BY t.product_category_name_english\nORDER BY revenue DESC\nLIMIT 5",
+    "answer": "The top 5 product categories by revenue are:\nhealth_beauty ($1,258,681.34)\nwatches_gifts ($1,205,005.68)\nbed_bath_table ($1,036,988.68)\nsports_leisure ($988,048.97)\ncomputers_accessories ($911,954.32)"
+  },
+  {
+    "timestamp": "2026-04-03T12:44:59",
+    "question": "Show the top 5 product categories by revenue in English",
+    "sql": "SELECT t.product_category_name_english, SUM(oi.price) as revenue FROM order_items oi JOIN products p ON oi.product_id = p.product_id JOIN product_category_name_translation t ON p.product_category_name = t.product_category_name GROUP BY t.product_category_name_english ORDER BY revenue DESC LIMIT 5",
+    "answer": "The top 5 product categories by revenue are:\nHealth & Beauty: $1,258,681.34\nWatches & Gifts: $1,205,005.68\nBed, Bath & Table: $1,036,988.68\nSports & Leisure: $988,048.97\nComputers & Accessories: $911,954.32"
+  },
+  {
+    "timestamp": "2026-04-03T12:52:15",
+    "question": "What was our Month-over-Month (MoM) revenue growth in 2018?",
+    "sql": "WITH monthly_rev AS (\n  SELECT \n    strftime('%Y-%m', o.order_purchase_timestamp) as month, \n    SUM(oi.price) as rev \n  FROM orders o \n  JOIN order_items oi ON o.order_id = oi.order_id \n  WHERE o.order_status = 'delivered' \n    AND strftime('%Y', o.order_purchase_timestamp) = '2018'\n  GROUP BY 1\n)\nSELECT \n  month, \n  rev, \n  LAG(rev) OVER (ORDER BY month) as prev, \n  ROUND(((rev - LAG(rev) OVER (ORDER BY month)) / LAG(rev) OVER (ORDER BY month)) * 100, 2) as growth_pct \nFROM monthly_rev\nORDER BY month;",
+    "answer": "Here is the month-over-month revenue growth in 2018 (data available through August):\n\nJanuary: $924,645.00 (N/A)\nFebruary: $826,437.13 (-10.62%)\nMarch: $953,356.25 (15.36%)\nApril: $973,534.09 (2.12%)\nMay: $977,544.69 (0.41%)\nJune: $856,077.86 (-12.43%)\nJuly: $867,953.46 (1.39%)\nAugust: $838,576.64 (-3.38%)"
+  },
+  {
+    "timestamp": "2026-04-03T12:52:50",
+    "question": "Which state has the highest percentage of repeat buyers?",
+    "sql": "WITH repeat_unique_ids AS (\n  SELECT c.customer_unique_id\n  FROM customers c\n  JOIN orders o ON c.customer_id = o.customer_id\n  GROUP BY c.customer_unique_id\n  HAVING COUNT(DISTINCT o.order_id) > 1\n)\nSELECT \n  c.customer_state,\n  ROUND(100.0 * COUNT(DISTINCT rui.customer_unique_id) / COUNT(DISTINCT c.customer_unique_id), 2) AS repeat_percentage\nFROM customers c\nJOIN orders o ON c.customer_id = o.customer_id\nLEFT JOIN repeat_unique_ids rui ON rui.customer_unique_id = c.customer_unique_id\nGROUP BY c.customer_state\nORDER BY repeat_percentage DESC\nLIMIT 1;",
+    "answer": "AC has the highest percentage of repeat buyers at 5.19%."
+  },
+  {
+    "timestamp": "2026-04-03T12:54:37",
+    "question": "give me all the table names and their column names in order",
+    "sql": "SELECT m.name AS table_name, p.name AS column_name\nFROM sqlite_master m\nJOIN pragma_table_info(m.name) p ON m.name != p.name\nWHERE m.type = 'table'\nORDER BY m.name, p.cid;",
+    "answer": "Here are all the table names and their column names, grouped and ordered by table then column:\n\ncustomers\ncustomer_id\ncustomer_unique_id\ncustomer_zip_code_prefix\ncustomer_city\ncustomer_state\n\ngeolocation\ngeolocation_zip_code_prefix\ngeolocation_lat\ngeolocation_lng\ngeolocation_city\ngeolocation_state\n\nleads_closed\nmql_id\nseller_id\nsdr_id\nsr_id\nwon_date\nbusiness_segment\nlead_type\nlead_behaviour_profile\nhas_company\nhas_gtin\naverage_stock\nbusiness_type\ndeclared_product_catalog_size\ndeclared_monthly_revenue\n\nleads_qualified\nmql_id\nfirst_contact_date\nlanding_page_id\norigin\n\norder_items\norder_id\norder_item_id\nproduct_id\nseller_id\nshipping_limit_date\nprice\nfreight_value\n\norder_payments\norder_id\npayment_sequential\npayment_type\npayment_installments\npayment_value\n\norder_reviews\nreview_id\norder_id\nreview_score\nreview_comment_title\nreview_comment_message\nreview_creation_date\nreview_answer_timestamp\n\norders\norder_id\ncustomer_id\norder_status\norder_purchase_timestamp\norder_approved_at\norder_delivered_carrier_date\norder_delivered_customer_date\norder_estimated_delivery_date\n\nproduct_category_name_translation\nproduct_category_name\nproduct_category_name_english\n\nproducts\nproduct_id\nproduct_category_name\nproduct_name_lenght\nproduct_description_lenght\nproduct_photos_qty\nproduct_weight_g\nproduct_length_cm\nproduct_height_cm\nproduct_width_cm\n\nsellers\nseller_id\nseller_zip_code_prefix\nseller_city\nseller_state"
+  },
+  {
+    "timestamp": "2026-04-03T12:56:22",
+    "question": "What is the average lifetime value (LTV) per customer?",
+    "sql": "SELECT AVG(total_spent) FROM (SELECT c.customer_unique_id, SUM(oi.price) as total_spent FROM customers c JOIN orders o ON c.customer_id = o.customer_id JOIN order_items oi ON o.order_id = oi.order_id GROUP BY 1)",
+    "answer": "The average lifetime value (LTV) per customer is $142.44."
+  },
+  {
+    "timestamp": "2026-04-03T13:01:04",
+    "question": "How many customers are from São Paulo?",
+    "sql": "SELECT COUNT(*) FROM customers c WHERE c.customer_state = 'SP'",
+    "answer": "There are 41,746 customers from São Paulo."
+  },
+  {
+    "timestamp": "2026-04-03T13:03:05",
+    "question": "Compare revenue of São Paulo vs Rio de Janeiro by month",
+    "sql": "WITH monthly_rev AS (\n  SELECT \n    strftime('%Y-%m', o.order_purchase_timestamp) AS month,\n    c.customer_city,\n    SUM(oi.price) AS rev\n  FROM order_items oi\n  JOIN orders o ON oi.order_id = o.order_id\n  JOIN customers c ON o.customer_id = c.customer_id\n  WHERE c.customer_city IN ('sao paulo', 'rio de janeiro')\n    AND o.order_status = 'delivered'\n  GROUP BY 1, 2\n)\nSELECT \n  month,\n  MAX(CASE WHEN customer_city = 'sao paulo' THEN rev END) AS sao_paulo_revenue,\n  MAX(CASE WHEN customer_city = 'rio de janeiro' THEN rev END) AS rio_de_janeiro_revenue\nFROM monthly_rev\nGROUP BY 1\nORDER BY 1;",
+    "answer": "Here is the monthly revenue comparison for São Paulo vs Rio de Janeiro (delivered orders only):\n2016-10: São Paulo $3,489.90 vs Rio de Janeiro $6,211.20\n2017-01: São Paulo $15,340.32 vs Rio de Janeiro $5,687.24\n2017-02: São Paulo $26,884.70 vs Rio de Janeiro $17,054.87\n2017-03: São Paulo $52,136.79 vs Rio de Janeiro $26,144.86\n2017-04: São Paulo $39,644.36 vs Rio de Janeiro $19,578.54\n2017-05: São Paulo $62,514.75 vs Rio de Janeiro $43,680.00\n2017-06: São Paulo $53,935.43 vs Rio de Janeiro $29,968.81\n2017-07: São Paulo $60,973.90 vs Rio de Janeiro $42,962.75\n2017-08: São Paulo $67,429.17 vs Rio de Janeiro $42,949.62\n2017-09: São Paulo $78,655.77 vs Rio de Janeiro $53,753.42\n2017-10: São Paulo $73,726.15 vs Rio de Janeiro $50,258.31\n2017-11: São Paulo $129,112.04 vs Rio de Janeiro $82,940.18\n2017-12: São Paulo $92,072.26 vs Rio de Janeiro $60,643.80\n2018-01: São Paulo $124,898.78 vs Rio de Janeiro $67,184.42\n2018-02: São Paulo $121,150.36 vs Rio de Janeiro $59,491.10\n2018-03: São Paulo $150,390.06 vs Rio de Janeiro $54,825.75\n2018-04: São Paulo $146,295.15 vs Rio de Janeiro $67,125.58\n2018-05: São Paulo $155,906.34 vs Rio de Janeiro $64,581.97\n2018-06: São Paulo $123,372.83 vs Rio de Janeiro $49,255.51\n2018-07: São Paulo $126,168.70 vs Rio de Janeiro $52,196.67\n2018-08: São Paulo $155,459.07 vs Rio de Janeiro $59,079.37"
+  },
+  {
+    "timestamp": "2026-04-03T13:04:08",
+    "question": "Compare revenue of São Paulo vs Rio de Janeiro by month",
+    "sql": "SELECT \n    strftime('%Y-%m', o.order_purchase_timestamp) AS month,\n    c.customer_state,\n    SUM(oi.price) AS revenue\nFROM order_items oi\nJOIN orders o ON oi.order_id = o.order_id\nJOIN customers c ON o.customer_id = c.customer_id\nWHERE c.customer_state IN ('SP', 'RJ')\nGROUP BY month, c.customer_state\nORDER BY month, c.customer_state;",
+    "answer": "Revenue comparison by month between São Paulo and Rio de Janeiro:\n2016-09: São Paulo $134.97 (no data for Rio de Janeiro)\n2016-10: São Paulo $14,575.85, Rio de Janeiro $11,246.45\n2017-01: São Paulo $41,534.90, Rio de Janeiro $12,683.20\n2017-02: São Paulo $78,687.08, Rio de Janeiro $32,466.05\n2017-03: São Paulo $138,087.91, Rio de Janeiro $55,699.83\n2017-04: São Paulo $132,634.50, Rio de Janeiro $57,889.84\n2017-05: São Paulo $176,912.68, Rio de Janeiro $74,628.81\n2017-06: São Paulo $173,887.55, Rio de Janeiro $54,452.31\n2017-07: São Paulo $184,714.55, Rio de Janeiro $78,618.90\n2017-08: São Paulo $198,753.97, Rio de Janeiro $78,662.60\n2017-09: São Paulo $218,376.33, Rio de Janeiro $95,045.48\n2017-10: São Paulo $227,905.50, Rio de Janeiro $97,252.86\n2017-11: São Paulo $360,251.89, Rio de Janeiro $150,539.39\n2017-12: São Paulo $280,740.14, Rio de Janeiro $118,260.54\n2018-01: São Paulo $375,404.50, Rio de Janeiro $122,212.69\n2018-02: São Paulo $312,318.98, Rio de Janeiro $117,796.50\n2018-03: São Paulo $385,708.78, Rio de Janeiro $117,848.50\n2018-04: São Paulo $398,822.42, Rio de Janeiro $123,281.40\n2018-05: São Paulo $436,596.30, Rio de Janeiro $126,972.13\n2018-06: São Paulo $343,828.57, Rio de Janeiro $102,798.57\n2018-07: São Paulo $326,319.19, Rio de Janeiro $99,973.64\n2018-08: São Paulo $396,613.49, Rio de Janeiro $95,762.98\n2018-09: São Paulo $145.00 (no data for Rio de Janeiro)"
+  },
+  {
+    "timestamp": "2026-04-03T13:06:43",
+    "question": "Compare revenue of Sao Paulo vs Rio de Janeiro by month",
+    "sql": "SELECT \n  strftime('%Y-%m', o.order_purchase_timestamp) AS month,\n  SUM(CASE WHEN c.customer_city = 'sao paulo' THEN oi.price ELSE 0 END) AS sao_paulo_revenue,\n  SUM(CASE WHEN c.customer_city = 'rio de janeiro' THEN oi.price ELSE 0 END) AS rio_de_janeiro_revenue\nFROM order_items oi\nJOIN orders o ON oi.order_id = o.order_id\nJOIN customers c ON o.customer_id = c.customer_id\nWHERE c.customer_city IN ('sao paulo', 'rio de janeiro')\nGROUP BY 1\nORDER BY 1;",
+    "answer": "Here is the monthly revenue comparison between Sao Paulo and Rio de Janeiro (all values in $):\n\n2016-10: Sao Paulo $3,998.59 vs Rio de Janeiro $7,241.49\n2017-01: Sao Paulo $16,301.19 vs Rio de Janeiro $6,066.94\n2017-02: Sao Paulo $28,307.83 vs Rio de Janeiro $18,303.17\n2017-03: Sao Paulo $55,220.70 vs Rio de Janeiro $27,519.39\n2017-04: Sao Paulo $45,880.07 vs Rio de Janeiro $20,268.14\n2017-05: Sao Paulo $63,672.82 vs Rio de Janeiro $45,124.57\n2017-06: Sao Paulo $57,162.39 vs Rio de Janeiro $30,380.49\n2017-07: Sao Paulo $64,092.31 vs Rio de Janeiro $46,124.69\n2017-08: Sao Paulo $70,009.67 vs Rio de Janeiro $44,521.08\n2017-09: Sao Paulo $81,249.52 vs Rio de Janeiro $54,569.85\n2017-10: Sao Paulo $75,827.80 vs Rio de Janeiro $51,363.10\n2017-11: Sao Paulo $130,781.62 vs Rio de Janeiro $84,973.09\n2017-12: Sao Paulo $93,773.42 vs Rio de Janeiro $65,044.74\n2018-01: Sao Paulo $128,199.64 vs Rio de Janeiro $70,068.00\n2018-02: Sao Paulo $123,374.59 vs Rio de Janeiro $62,068.26\n2018-03: Sao Paulo $154,068.77 vs Rio de Janeiro $57,437.59\n2018-04: Sao Paulo $149,686.08 vs Rio de Janeiro $68,846.28\n2018-05: Sao Paulo $162,180.22 vs Rio de Janeiro $66,680.57\n2018-06: Sao Paulo $124,436.62 vs Rio de Janeiro $51,512.40\n2018-07: Sao Paulo $128,835.24 vs Rio de Janeiro $53,714.12\n2018-08: Sao Paulo $157,720.45 vs Rio de Janeiro $60,710.90\n2018-09: Sao Paulo $145.00 vs Rio de Janeiro $0.00"
+  },
+  {
+    "timestamp": "2026-04-03T13:14:06",
+    "question": "Top 5 product categories by revenue in English",
+    "sql": "SELECT t.product_category_name_english, SUM(oi.price) as revenue FROM order_items oi JOIN products p ON oi.product_id = p.product_id JOIN product_category_name_translation t ON p.product_category_name = t.product_category_name GROUP BY t.product_category_name_english ORDER BY revenue DESC LIMIT 5",
+    "answer": "The top 5 product categories by revenue are:\nHealth & Beauty ($1,258,681.34)\nWatches & Gifts ($1,205,005.68)\nBed, Bath & Table ($1,036,988.68)\nSports & Leisure ($988,048.97)\nComputers & Accessories ($911,954.32)"
+  },
+  {
+    "timestamp": "2026-04-03T13:26:01",
+    "question": "Revenue per category",
+    "sql": "SELECT t.product_category_name_english, SUM(oi.price) AS revenue\nFROM order_items oi\nJOIN products p ON oi.product_id = p.product_id\nJOIN product_category_name_translation t ON p.product_category_name = t.product_category_name\nGROUP BY t.product_category_name_english\nORDER BY revenue DESC",
+    "answer": "Revenue per product category, sorted by highest to lowest:\n\nHealth & Beauty: $1,258,681.34\nWatches & Gifts: $1,205,005.68\nBed, Bath & Table: $1,036,988.68\nSports & Leisure: $988,048.97\nComputers & Accessories: $911,954.32\nFurniture & Decor: $729,762.49\nCool Stuff: $635,290.85\nHousewares: $632,248.66\nAuto: $592,720.11\nGarden Tools: $485,256.46\nToys: $483,946.60\nBaby: $411,764.89\nPerfumery: $399,124.87\nTelephony: $323,667.53\nOffice Furniture: $273,960.70\nStationery: $230,943.23\nComputers: $222,963.13\nPet Shop: $214,315.41\nMusical Instruments: $191,498.88\nSmall Appliances: $190,648.58\nElectronics: $160,246.74\nConsoles & Games: $157,465.22\nFashion Bags & Accessories: $152,823.54\nConstruction Tools & Construction: $144,677.59\nLuggage & Accessories: $140,429.98\nHome Appliances 2: $113,317.74\nHome Construction: $83,088.12\nHome Appliances: $80,171.53\nAgro, Industry & Commerce: $72,530.47\nFurniture - Living Room: $68,916.56\nFixed Telephony: $59,583.00\nHome Comfort: $58,572.04\nAir Conditioning: $55,024.96\nAudio: $50,688.50\nSmall Appliances - Home Oven & Coffee: $47,445.71\nBooks - General Interest: $46,856.88\nKitchen, Dining, Laundry, Garden & Furniture: $46,328.37\nConstruction Tools - Lights: $41,080.00\nConstruction Tools - Safety: $40,544.52\nIndustry, Commerce & Business: $39,669.61\nFood: $29,393.41\nMarketplace: $28,378.47\nConstruction Tools - Garden: $25,715.89\nArt: $24,202.64\nFashion Shoes: $23,562.77\nDrinks: $22,428.70\nSignaling & Security: $21,509.23\nFurniture - Bedroom: $20,028.78\nBooks - Technical: $19,096.06\nConstruction Tools - Tools: $15,903.95\nFood & Drink: $15,179.48\nFashion - Male Clothing: $10,797.82\nFashion - Underwear & Beach: $9,541.55\nChristmas Supplies: $8,800.82\nTablets, Printing & Image: $7,528.41\nCine & Photo: $6,933.46\nMusic: $6,034.35\nDVDs & Blu-ray: $5,999.39\nBooks - Imported: $4,639.85\nParty Supplies: $4,485.18\nFurniture - Mattress & Upholstery: $4,368.08\nFashion - Female Clothing: $2,803.64\nFashion - Sport: $2,119.51\nLa Cuisine: $2,054.99\nArts & Craftsmanship: $1,814.01\nDiapers & Hygiene: $1,567.59\nFlowers: $1,110.04\nHome Comfort 2: $760.27\nCDs, DVDs & Musicals: $730.00\nFashion - Children's Clothes: $569.85\nSecurity & Services: $283.29"
+  },
+  {
+    "timestamp": "2026-04-03T13:37:15",
+    "question": "Top 5 products by revenue",
+    "sql": "SELECT oi.product_id, SUM(oi.price) as revenue\nFROM order_items oi\nGROUP BY oi.product_id\nORDER BY revenue DESC\nLIMIT 5",
+    "answer": "The top 5 products by revenue are:\n\nProduct bb50f2e236e5eea0100680137654686c: $63,885.00\nProduct 6cdd53843498f92890544667809f1595: $54,730.20\nProduct d6160fb7873f184099d9bc95e30376af: $48,899.34\nProduct d1c427060a0f73f6b889a5c7c61f2ac4: $47,214.51\nProduct 99a4788cb24856965c36a24e339b6058: $43,025.56"
+  },
+  {
+    "timestamp": "2026-04-03T13:39:51",
+    "question": "Top 5 products by revenue",
+    "sql": "SELECT p.product_id, SUM(oi.price) AS revenue\nFROM order_items oi\nJOIN products p ON oi.product_id = p.product_id\nGROUP BY p.product_id\nORDER BY revenue DESC\nLIMIT 5",
+    "answer": "The top 5 products by revenue are:\n\nbb50f2e236e5eea0100680137654686c: $63,885.00\n6cdd53843498f92890544667809f1595: $54,730.20\nd6160fb7873f184099d9bc95e30376af: $48,899.34\nd1c427060a0f73f6b889a5c7c61f2ac4: $47,214.51\n99a4788cb24856965c36a24e339b6058: $43,025.56"
+  },
+  {
+    "timestamp": "2026-04-03T13:40:24",
+    "question": "Top 5 products by revenue",
+    "sql": "SELECT p.product_id, SUM(oi.price) AS revenue\nFROM order_items oi\nJOIN products p ON oi.product_id = p.product_id\nGROUP BY p.product_id\nORDER BY revenue DESC\nLIMIT 5",
+    "answer": "The top 5 products by revenue are:\n\nProduct ID bb50f2e236e5eea0100680137654686c: $63,885.00\nProduct ID 6cdd53843498f92890544667809f1595: $54,730.20\nProduct ID d6160fb7873f184099d9bc95e30376af: $48,899.34\nProduct ID d1c427060a0f73f6b889a5c7c61f2ac4: $47,214.51\nProduct ID 99a4788cb24856965c36a24e339b6058: $43,025.56"
+  },
+  {
+    "timestamp": "2026-04-03T13:40:43",
+    "question": "How many orders were placed in each month 2018?",
+    "sql": "SELECT strftime('%Y-%m', o.order_purchase_timestamp) AS month, COUNT(*) AS order_count\nFROM orders o\nWHERE strftime('%Y', o.order_purchase_timestamp) = '2018'\nGROUP BY 1\nORDER BY 1;",
+    "answer": "Number of orders per month in 2018:  \nJanuary: 7,269  \nFebruary: 6,728  \nMarch: 7,211  \nApril: 6,939  \nMay: 6,873  \nJune: 6,167  \nJuly: 6,292  \nAugust: 6,512  \nSeptember: 16  \nOctober: 4"
+  },
+  {
+    "timestamp": "2026-04-03T13:43:18",
+    "question": "How many orders were placed in each month 2018?",
+    "sql": "SELECT strftime('%Y-%m', order_purchase_timestamp) as month, COUNT(*) as order_count\nFROM orders\nWHERE strftime('%Y', order_purchase_timestamp) = '2018'\nGROUP BY 1\nORDER BY 1",
+    "answer": "In 2018, the number of orders placed each month was:\nJanuary: 7,269\nFebruary: 6,728\nMarch: 7,211\nApril: 6,939\nMay: 6,873\nJune: 6,167\nJuly: 6,292\nAugust: 6,512\nSeptember: 16\nOctober: 4"
+  },
+  {
+    "timestamp": "2026-04-03T13:46:16",
+    "question": "How many orders were placed in each month 2018?",
+    "sql": "SELECT strftime('%Y-%m', order_purchase_timestamp) AS month, COUNT(*) AS order_count\nFROM orders\nWHERE strftime('%Y', order_purchase_timestamp) = '2018'\nGROUP BY 1\nORDER BY 1;",
+    "answer": "Number of orders placed each month in 2018:\nJanuary: 7,269\nFebruary: 6,728\nMarch: 7,211\nApril: 6,939\nMay: 6,873\nJune: 6,167\nJuly: 6,292\nAugust: 6,512\nSeptember: 16\nOctober: 4"
+  },
+  {
+    "timestamp": "2026-04-03T13:49:24",
+    "question": "How many orders were placed in each month 2018?",
+    "sql": "SELECT strftime('%Y-%m', o.order_purchase_timestamp) as month, COUNT(*) as order_count\nFROM orders o\nWHERE strftime('%Y', o.order_purchase_timestamp) = '2018'\nGROUP BY 1\nORDER BY 1",
+    "answer": "Here are the number of orders placed in each month of 2018:\n\nJanuary: 7,269\nFebruary: 6,728\nMarch: 7,211\nApril: 6,939\nMay: 6,873\nJune: 6,167\nJuly: 6,292\nAugust: 6,512\nSeptember: 16\nOctober: 4"
+  },
+  {
+    "timestamp": "2026-04-03T13:59:40",
+    "question": "How many orders were placed in each month 2018?",
+    "sql": "SELECT strftime('%Y-%m', o.order_purchase_timestamp) AS month, COUNT(*) AS order_count\nFROM orders o\nWHERE strftime('%Y', o.order_purchase_timestamp) = '2018'\nGROUP BY 1\nORDER BY 1;",
+    "answer": "Here is the number of orders placed in each month of 2018:\n\nJanuary 2018: 7,269\nFebruary 2018: 6,728\nMarch 2018: 7,211\nApril 2018: 6,939\nMay 2018: 6,873\nJune 2018: 6,167\nJuly 2018: 6,292\nAugust 2018: 6,512\nSeptember 2018: 16\nOctober 2018: 4"
+  },
+  {
+    "timestamp": "2026-04-03T14:05:46",
+    "question": "How many orders were placed in each month 2018?",
+    "sql": "SELECT strftime('%Y-%m', order_purchase_timestamp) as month, COUNT(*) as order_count\nFROM orders\nWHERE strftime('%Y-%m', order_purchase_timestamp) LIKE '2018-%'\nGROUP BY 1\nORDER BY 1;",
+    "answer": "In 2018, the number of orders placed each month was:\n\nJanuary: 7,269\nFebruary: 6,728\nMarch: 7,211\nApril: 6,939\nMay: 6,873\nJune: 6,167\nJuly: 6,292\nAugust: 6,512\nSeptember: 16\nOctober: 4"
+  },
+  {
+    "timestamp": "2026-04-03T14:08:53",
+    "question": "How many orders were placed in each month 2018?",
+    "sql": "SELECT strftime('%Y-%m', order_purchase_timestamp) AS month, COUNT(*) AS order_count\nFROM orders\nWHERE strftime('%Y', order_purchase_timestamp) = '2018'\nGROUP BY month\nORDER BY month;",
+    "answer": "Here is the number of orders placed each month in 2018:\nJanuary: 7,269\nFebruary: 6,728\nMarch: 7,211\nApril: 6,939\nMay: 6,873\nJune: 6,167\nJuly: 6,292\nAugust: 6,512\nSeptember: 16\nOctober: 4"
   }
 ]

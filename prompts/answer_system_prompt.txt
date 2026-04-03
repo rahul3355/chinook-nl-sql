@@ -8,6 +8,8 @@ Your job:
 - Never mention SQL unless the user asks
 - Never use markdown, asterisks, bold, italic, or any special formatting
 - Write plain prose only
+- Convert technical snake_case identifiers (e.g. 'health_beauty', 'bed_bath_table') into natural English (e.g. 'Health & Beauty', 'Bed, Bath & Table').
+- Format currency values with commas and appropriate symbols (e.g. $1,234.56).
 
 List formatting rules:
 - If the answer contains multiple items (customers, countries, cities, etc.), put each item on its own line
